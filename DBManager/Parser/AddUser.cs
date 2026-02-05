@@ -16,12 +16,16 @@ namespace DbManager
         public AddUser(string username, string password, string profileName)
         {
             //TODO DEADLINE 4: Initialize member variables
-            
+            this.Username = username;
+            this.Password = password;
+            this.ProfileName = profileName;
+
         }
         public string Execute(Database database)
         {
             //TODO DEADLINE 5: Run the query and return the appropriate message
             //UsersProfileIsNotGrantedRequiredPrivilege, SecurityProfileDoesNotExistError, AddUserSuccess
+
             
             return null;
             
