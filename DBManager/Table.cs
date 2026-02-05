@@ -11,13 +11,13 @@ namespace DbManager
         
         public string Name { get; private set; } = null;
 
-        public Table(string name, List<ColumnDefinition> columns)
+        public Table(string name, List<ColumnDefinition> columns)//zeynep
         {
             //TODO DEADLINE 1.A: Initialize member variables
             
         }
 
-        public Row GetRow(int i)
+        public Row GetRow(int i)//zeynep
         {
             //TODO DEADLINE 1.A: Return the i-th row
             
@@ -25,13 +25,13 @@ namespace DbManager
             
         }
 
-        public void AddRow(Row row)
+        public void AddRow(Row row)//zeynep
         {
             //TODO DEADLINE 1.A: Add a new row
             
         }
 
-        public int NumRows()
+        public int NumRows()//zeynep
         {
             //TODO DEADLINE 1.A: Return the number of rows
             
@@ -39,19 +39,34 @@ namespace DbManager
             
         }
 
-        public ColumnDefinition GetColumn(int i)
+        public ColumnDefinition GetColumn(int i)//besma
         {
             //TODO DEADLINE 1.A: Return the i-th column
+            int cont = 0;
+            foreach (ColumnDefinition col in ColumnDefinitions)
+            {
+                if (cont == i)
+                {
+                    return col;
+                }
+                cont++;
+            }
+
             
             return null;
             
         }
 
-        public int NumColumns()
+        public int NumColumns()//besma
         {
             //TODO DEADLINE 1.A: Return the number of columns
+            int cont = 0;
+            foreach (ColumnDefinition col in ColumnDefinitions)
+            {
+                cont++
+            }
             
-            return 0;
+            return cont;
             
         }
         

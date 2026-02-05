@@ -15,6 +15,9 @@ namespace DbManager
         public Condition(string column, string op, string literalValue)
         {
             //TODO DEADLINE 1A: Initialize member variables
+            ColumnName = column;
+            Operator = op;
+            LiteralValue = literalValue;
             
         }
 
@@ -27,10 +30,63 @@ namespace DbManager
             //"9" > "10"
             //9 < 10
             //Convert first the strings to the appropriate type and then compare (depending on the operator of the condition)
+            if(type == ColumnDefinition.DataType.Int)
+            {
+                int e1 = int.Parse(value);
+                int e2 = int.Parse(LiteralValue);
+                if (Operator == "<")
+                {
+                    return e1<e2;
+                }
+                  if (Operator == ">")
+                {
+                    return e1 > e2;
+                }
+                  if (Operator == "=")
+                {
+                    return e1 == e2;
+                }
+                  if (Operator == "<")
+                {
+                    return e1 < e2;
+                }
+                  if (Operator == "<=")
+                {
+                    return e1 <= e2;
+                }
+                  if (Operator == ">=")
+                {
+                    return e1 >= e2;
+                }
+                  if (Operator != "<")
+                {
+                    return e1 != e2;
+                }
+                return false;
+            }
 
-            
+            if (type == ColumnDefinition.DataType.String)
+            {
+                int aux = string.Compare(value, LiteralValue);
+                if (Operator == "<")
+                {
+                    return aux <0;
+                }
+                if (Operator == ">")
+                {
+                    return aux > 0;
+                }
+                if (Operator == "=")
+                {
+                    return aux ==0;
+                }
+                if (Operator == "!=")
+                {
+                    return aux !=0;
+                }
+                return false;
+            }
             return false;
-            
         }
     }
 }
