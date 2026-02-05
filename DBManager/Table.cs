@@ -93,32 +93,81 @@ namespace DbManager
         private List<int> RowIndicesWhereConditionIsTrue(Condition condition)
         {
             //TODO DEADLINE 1.A: Returns the indices of all the rows where the condition is true. Check Row.IsTrue()
-            
-            return null;
-            
+
+            List<int> indices = new List<int>();
+
+            for (int i = 0; i < NumRows(); i++)
+            {
+                if (Rows[i].IsTrue(condition))
+                {
+                    indices.Add(i);
+                }
+            }
+
+            return indices;
+
         }
 
         public void DeleteWhere(Condition condition)
         {
             //TODO DEADLINE 1.A: Delete all rows where the condition is true. Check RowIndicesWhereConditionIsTrue()
             
+            List<int> indices = RowIndicesWhereConditionIsTrue(condition);
+
+            for (int i = indices.Count - 1; i >= 0; i--)
+            {
+                DeleteIthRow(indices[i]);
+            }
+
         }
 
         public Table Select(List<string> columnNames, Condition condition)
         {
             //TODO DEADLINE 1.A: Return a new table (with name 'Result') that contains the result of the select. The condition
             //may be null (if no condition, all rows should be returned). This is the most difficult method in this class
-            
-            return null;
-            
+
+            List<ColumnDefinition> resultColumns = new List<ColumnDefinition>();
+
+            foreach (string colName in columnNames)
+            {
+                ColumnDefinition col = ColumnByName(colName);
+                if (col != null)
+                    resultColumns.Add(col);
+            }
+
+            Table result = new Table("Result", resultColumns);
+
+            foreach (Row row in Rows)
+            {
+                if (condition == null || row.IsTrue(condition))
+                {
+                    List<string> values = new List<string>();
+
+                    foreach (string colName in columnNames)
+                    {
+                        values.Add(row.GetValue(colName));
+                    }
+
+                    result.AddRow(new Row(ColumnDefinitions, values));
+                }
+            }
+
+            return result;
+
         }
 
         public bool Insert(List<string> values)
         {
             //TODO DEADLINE 1.A: Insert a new row with the values given. If the number of values is not correct, return false. True otherwise
-            
-            return false;
-            
+
+            if (values.Count != NumColumns())
+                return false;
+
+            Row newRow = new Row(ColumnDefinitions,values);
+            AddRow(newRow);
+
+            return true;
+
         }
 
         public bool Update(List<SetValue> setValues, Condition condition)
