@@ -13,30 +13,39 @@ namespace DbManager
 
         public Table(string name, List<ColumnDefinition> columns)
         {
-            //TODO DEADLINE 1.A: Initialize member variables
+           public Table(string name, List<ColumnDefinition> columns)
+        {
+            // TODO DEADLINE 1.A: Initialize member variables
+            this.Name = name;
+            this.ColumnDefinitions = columns;
+        }
             
         }
 
         public Row GetRow(int i)
         {
-            //TODO DEADLINE 1.A: Return the i-th row
-            
+            // TODO DEADLINE 1.A: Return the i-th row
+            if (i >= 0 && i < Rows.Count)
+            {
+                return Rows[i];
+            }
             return null;
-            
         }
+
 
         public void AddRow(Row row)
         {
-            //TODO DEADLINE 1.A: Add a new row
-            
+            // TODO DEADLINE 1.A: Add a new row
+            if (row != null)
+            {
+                Rows.Add(row);
+            }
         }
 
         public int NumRows()
         {
-            //TODO DEADLINE 1.A: Return the number of rows
-            
-            return 0;
-            
+            // TODO DEADLINE 1.A: Return the number of rows
+            return Rows.Count;
         }
 
         public ColumnDefinition GetColumn(int i)
