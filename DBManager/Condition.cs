@@ -30,13 +30,14 @@ namespace DbManager
             //"9" > "10"
             //9 < 10
             //Convert first the strings to the appropriate type and then compare (depending on the operator of the condition)
+
             if(type == ColumnDefinition.DataType.Int)
             {
                 int e1 = int.Parse(value);
                 int e2 = int.Parse(LiteralValue);
                 if (Operator == "<")
                 {
-                    return e1<e2;
+                    return e1 < e2;
                 }
                   if (Operator == ">")
                 {
@@ -58,7 +59,7 @@ namespace DbManager
                 {
                     return e1 >= e2;
                 }
-                  if (Operator != "<")
+                  if (Operator == "!=")
                 {
                     return e1 != e2;
                 }
