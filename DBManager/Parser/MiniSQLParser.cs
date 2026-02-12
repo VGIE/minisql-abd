@@ -25,19 +25,19 @@ namespace DbManager
             
 
             //TODO DEADLINE 4
-            const string createSecurityProfilePattern = null;
+            const string createSecurityProfilePattern = @"^CREATE\s+SECURITY\s+PROFILE\s+([a-zA-Z0-9]+)$";
             
-            const string dropSecurityProfilePattern = null;
+            const string dropSecurityProfilePattern = @"^DROP\s+SECURITY\s+PROFILE\s+([a-zA-Z0-9]+)$";
             
-            const string grantPattern = null;
+            const string grantPattern = @"^GRANT\s+(SELECT|INSERT|DELETE|UPDATE)\s+ON\s+([a-zA-Z0-9]+)\s+TO\s+([a-zA-Z0-9]+)$";
             
-            const string revokePattern = null;
+            const string revokePattern = @"^REVOKE\s+(SELECT|INSERT|DELETE|UPDATE)\s+ON\s+([a-zA-Z0-9]+)\s+TO\s+([a-zA-Z0-9]+)$";
             
-            const string addUserPattern = null;
+            const string addUserPattern = @"^ADD\s+USER\s*\(\s*([a-zA-Z0-9]+)\s*,\s*([a-zA-Z0-9]+)\s*,\s*([a-zA-Z0-9]+)\s*\)$";
             
-            const string deleteUserPattern = null;
-            
+            const string deleteUserPattern = @"^DELETE\s+USER\s+([a-zA-Z0-9]+)$";
 
+            Match match;
             //TODO DEADLINE 2
             //Parse query using the regular expressions above one by one. If there is a match, create an instance of the query with the parsed parameters
             //For example, if the query is a "SELECT ...", there should be a match with selectPattern. We would create and return an instance of Select
@@ -46,8 +46,32 @@ namespace DbManager
 
             //TODO DEADLINE 4
             //Do the same for the security queries (CREATE SECURITY PROFILE, ...)
+
+            match = Regex.Match(miniSQLQuery, addUserPattern);
+            if (match.Success)
+                return new AddUser(match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value);
             
-            return null;
+            match = Regex.Match(miniSQLQuery, createSecurityProfilePattern);
+            if (match.Success)
+                return new CreateSecurityProfile(match.Groups[1].Value);
+
+            match = Regex.Match(miniSQLQuery, dropSecurityProfilePattern);
+            if (match.Success)
+                return new DropSecurityProfile(match.Groups[1].Value);
+
+            match = Regex.Match(miniSQLQuery, deleteUserPattern);
+            if (match.Success)
+                return new DeleteUser(match.Groups[1].Value);
+
+            match = Regex.Match(miniSQLQuery, grantPattern);
+            if (match.Success)
+                return new Grant(match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value);
+
+
+
+
+
+                return null;
            
         }
 
