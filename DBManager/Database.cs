@@ -63,17 +63,17 @@ namespace DbManager
         {
             Table table = TableByName(tableName);
 
-            // Table doesn't exist
+            
             if (table == null)
             {
                 LastErrorMessage = Constants.TableDoesNotExistError;
                 return false;
             }
 
-            // Remove table
+            
             Tables.Remove(table);
 
-            // Success
+            
             LastErrorMessage = Constants.DropTableSuccess;
             return true;
         }
@@ -127,7 +127,7 @@ namespace DbManager
             //DEADLINE 1.C + DEADLINE 5
             try
             {
-                // Same folder as executable (simple & stable for unit tests)
+                
                 string baseDir = AppDomain.CurrentDomain.BaseDirectory;
 
                 string dbPath = Path.Combine(baseDir, $"{databaseName}.db");
@@ -136,13 +136,13 @@ namespace DbManager
 #pragma warning disable SYSLIB0011
                 BinaryFormatter formatter = new BinaryFormatter();
 
-                // Save tables
+              
                 using (FileStream fs = new FileStream(dbPath, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
                     formatter.Serialize(fs, Tables);
                 }
 
-                // Save security manager
+                
                 using (FileStream fs = new FileStream(secPath, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
                     formatter.Serialize(fs, SecurityManager);
@@ -159,7 +159,7 @@ namespace DbManager
 
         public static Database Load(string databaseName, string username, string password)
         {
-            //DEADLINE 1.C + DEADLINE 5
+            
             try
             {
                 string baseDir = AppDomain.CurrentDomain.BaseDirectory;
@@ -176,30 +176,30 @@ namespace DbManager
 #pragma warning disable SYSLIB0011
                 BinaryFormatter formatter = new BinaryFormatter();
 
-                // Load tables
+                
                 using (FileStream fs = new FileStream(dbPath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     loadedTables = (List<Table>)formatter.Deserialize(fs);
                 }
 
-                // Load security manager
+                
                 using (FileStream fs = new FileStream(secPath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     loadedSecurity = (Manager)formatter.Deserialize(fs);
                 }
 #pragma warning restore SYSLIB0011
 
-                // Create DB instance with private ctor
+               
                 Database db = new Database();
 
-                // Set loaded state
+              
                 db.Tables = loadedTables ?? new List<Table>();
                 db.SecurityManager = loadedSecurity;
 
-                // Set current username (DEADLINE 5)
+              
                 db.m_username = username;
 
-                // Check password (DEADLINE 5)
+               
                 if (db.SecurityManager == null)
                     return null;
 
