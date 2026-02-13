@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using DbManager.Parser;
+using DbManager.Security;
 
 namespace DbManager
 {
- 
     public class Grant : MiniSqlQuery
     {
         public string PrivilegeName { get; set; }
@@ -14,17 +14,27 @@ namespace DbManager
 
         public Grant(string privilegeName, string tableName, string profileName)
         {
-            //TODO DEADLINE 4: Initialize member variables
-            
-        }
-        public string Execute(Database database)
-        {
-            //TODO DEADLINE 5: Run the query and return the appropriate message
-            //UsersProfileIsNotGrantedRequiredPrivilege, SecurityProfileDoesNotExistError, PrivilegeDoesNotExistError, GrantPrivilegeSuccess, ProfileAlreadyHasPrivilege
-            
-            return null;
-            
+            PrivilegeName = privilegeName;
+            TableName = tableName;
+            ProfileName = profileName;
         }
 
+        public string Execute(Database database)
+        {
+            if (!database.IsUserAdmin())
+                return Constants.UsersProfileIsNotGrantedRequiredPrivilege;
+
+            Profile profile = database.SecurityManager.ProfileByName(ProfileName);
+            if (profile == null)
+                return Constants.SecurityProfileDoesNotExistError;
+
+            if (!Enum.TryParse(PrivilegeName, true, out Privilege privilege))
+                return Constants.PrivilegeDoesNotExistError;
+
+            if (!profile.GrantPrivilege(TableName, privilege))
+                return Constants.ProfileAlreadyHasPrivilege;
+
+            return Constants.GrantPrivilegeSuccess;
+        }
     }
 }
