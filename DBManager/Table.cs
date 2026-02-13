@@ -13,12 +13,11 @@ namespace DbManager
 
         public Table(string name, List<ColumnDefinition> columns)
         {
-           public Table(string name, List<ColumnDefinition> columns)
-        {
+        
             // TODO DEADLINE 1.A: Initialize member variables
             this.Name = name;
             this.ColumnDefinitions = columns;
-        }
+        
             
         }
 
