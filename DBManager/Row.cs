@@ -95,13 +95,18 @@ namespace DbManager
                 return "";
             }
             List<string> encodedValues = new List<string>();
-            return null;
+            foreach(string val in this.Values)
+            {
+                encodedValues.Add(Encode(val));
+            }
+            return string.Join(Delimiter,encodedValues);
             
         }
 
         public static Row Parse(List<ColumnDefinition> columns, string value)
         {
             //TODO DEADLINE 1.C: Parse a rowReturn the row as string with all values separated by the delimiter
+
             
             return null;
             
