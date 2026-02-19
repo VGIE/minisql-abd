@@ -89,7 +89,12 @@ namespace DbManager
         public string AsText()
         {
             //TODO DEADLINE 1.C: Return the row as string with all values separated by the delimiter
-            
+
+            if (this.Values == null || this.Values.Count == 0)
+            {
+                return "";
+            }
+            List<string> encodedValues = new List<string>();
             return null;
             
         }
