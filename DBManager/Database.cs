@@ -26,20 +26,29 @@ namespace DbManager
         public Database(string adminUsername, string adminPassword)
         {
             //DEADLINE 1.B: Initalize the member variables
-            
+            m_username = adminUsername;
+            Tables = new List<Table>();
+            SecurityManager = new Manager(adminUsername);
         }
 
         public bool AddTable(Table table)
         {
             //DEADLINE 1.B: Add a new table to the database
-            
-            return false;
+            Tables.Add(table);
+            return true;
             
         }
 
         public Table TableByName(string tableName)
         {
             //DEADLINE 1.B: Find and return the table with the given name
+            foreach(Table table in Tables)
+            {
+                if(table.Name == tableName)
+                {
+                    return table;
+                }
+            }
             
             return null;
             
@@ -51,8 +60,21 @@ namespace DbManager
             //return false and set LastErrorMessage with the appropriate error (Check Constants.cs)
             //Do the same if no column is provided
             //If everything goes ok, set LastErrorMessage with the appropriate success message (Check Constants.cs)
+            if (TableByName(tableName)!=null)
+            {
+                LastErrorMessage=Constants.TableAlreadyExistsError;
+                return false;
+            }
+            if(ColumnDefinition==null || ColumnDefinition.Count==0)
+            {
+                LastErrorMessage=Constants.DatabaseCreatedWithoutColumnsError;
+                return false;
+            }
+            Table newTable =new Table(tableName,ColumnDefinition);
+            Tables.Add(newTable);
+            LastErrorMessage=Constants.CreateTableSuccess;
             
-            return false;
+            return true;
             
         }
 

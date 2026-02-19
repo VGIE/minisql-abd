@@ -63,7 +63,7 @@ namespace DbManager
             int cont = 0;
             foreach (ColumnDefinition col in ColumnDefinitions)
             {
-                cont++
+                cont++;
             }
             
             return cont;

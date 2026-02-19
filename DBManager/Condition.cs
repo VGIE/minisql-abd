@@ -47,10 +47,7 @@ namespace DbManager
                 {
                     return e1 == e2;
                 }
-                  if (Operator == "<")
-                {
-                    return e1 < e2;
-                }
+                
                   if (Operator == "<=")
                 {
                     return e1 <= e2;
