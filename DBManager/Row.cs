@@ -16,22 +16,35 @@ namespace DbManager
         public Row(List<ColumnDefinition> columnDefinitions, List<string> values)
         {
             //TODO DEADLINE 1.A: Initialize member variables
+            this.ColumnDefinitions = columnDefinitions;
+            this.Values = values;
 
-            
         }
 
         public void SetValue(string columnName, string value)
         {
             //TODO DEADLINE 1.A: Given a column name and value, change the value in that column
+            var column = this.ColumnDefinitions.FirstOrDefault(col => col.Name == columnName);
+            if (column != null)
+            {
+                int index = this.ColumnDefinitions.IndexOf(column);
+                this.Values[index] = value;
+            }
 
-            
+
         }
 
         public string GetValue(string columnName)
         {
             //TODO DEADLINE 1.A: Given a column name, return the value in that column
+            var column = this.ColumnDefinitions.FirstOrDefault(col => col.Name == columnName);
+            if (column != null)
+            {
+                int index = this.ColumnDefinitions.IndexOf(column);
+                    return (Values[index]);
+            }
 
-            
+
             return null;
             
         }
@@ -40,7 +53,14 @@ namespace DbManager
         {
             //TODO DEADLINE 1.A: Given a condition (column name, operator and literal value, return whether it is true or not
             //for this row. Check Condition.IsTrue method
-
+            var colName = condition.ColumnName;
+            var valueColumn = GetValue(colName);
+            var columnDef = this.ColumnDefinitions.FirstOrDefault(col => col.Name == colName);
+            if (columnDef != null)
+            {
+                return condition.IsTrue(valueColumn, columnDef.Type);
+            }
+           
             
             return false;
             

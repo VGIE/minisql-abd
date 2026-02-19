@@ -12,14 +12,26 @@ namespace DbManager.Parser
         public Delete(string table, Condition where)
         {
             //TODO DEADLINE 2: Initialize member variables
-            
+            this.Table = table;
+            this.Where = where;
+
         }
 
         public string Execute(Database database)
         {
             //TODO DEADLINE 3: Run the query and return the appropriate message
             //DeleteSuccess or the last error in the database
-            
+            bool success = database.DeleteWhere(this.Table, this.Where);
+
+            if (success)
+            {
+                return Constants.DeleteSuccess;
+            }
+            else
+            {
+                return database.LastErrorMessage;
+            }
+
             return null;
             
         }
