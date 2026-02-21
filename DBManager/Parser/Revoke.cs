@@ -1,11 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using DbManager.Parser;
+using DbManager.Security;
 
 namespace DbManager
 {
- 
     public class Revoke : MiniSqlQuery
     {
         public string PrivilegeName { get; set; }
@@ -14,17 +12,24 @@ namespace DbManager
 
         public Revoke(string privilegeName, string tableName, string profileName)
         {
-            //TODO DEADLINE 4: Initialize member variables
-            
-        }
-        public string Execute(Database database)
-        {
-            //TODO DEADLINE 5: Run the query and return the appropriate message
-            //UsersProfileIsNotGrantedRequiredPrivilege, SecurityProfileDoesNotExistError, RevokePrivilegeSuccess, 
-            
-            return null;
-            
+            PrivilegeName = privilegeName;
+            TableName = tableName;
+            ProfileName = profileName;
         }
 
+        public string Execute(Database database)
+        {
+            if (!database.IsUserAdmin())
+                return Constants.UsersProfileIsNotGrantedRequiredPrivilege;
+
+            if (database.SecurityManager.ProfileByName(ProfileName) == null)
+                return Constants.SecurityProfileDoesNotExistError;
+
+            Privilege privilege = (Privilege)Enum.Parse(typeof(Privilege), PrivilegeName);
+
+            database.SecurityManager.RevokePrivilege(ProfileName, TableName, privilege);
+
+            return Constants.RevokePrivilegeSuccess;
+        }
     }
 }

@@ -16,25 +16,46 @@ namespace DbManager.Security
 
         public bool GrantPrivilege(string table, Privilege privilege)
         {
-            //TODO DEADLINE 5: Grant this privilege on this table. Return false if there is an error, true otherwise
-            
-            return false;
-            
+            if (string.IsNullOrWhiteSpace(table))
+                return false;
+
+            if (!PrivilegesOn.TryGetValue(table, out List<Privilege> list) || list == null)
+            {
+                list = new List<Privilege>();
+                PrivilegesOn[table] = list;
+            }
+
+            if (!list.Contains(privilege))
+                list.Add(privilege);
+
+            return true;
         }
 
         public bool RevokePrivilege(string table, Privilege privilege)
         {
-            //TODO DEADLINE 5: Revoke this privilege on this table. Return false if there is an error, true otherwise
-            
-            return false;
-            
+            if (string.IsNullOrWhiteSpace(table))
+                return false;
+
+            if (!PrivilegesOn.TryGetValue(table, out List<Privilege> list) || list == null)
+                return false;
+
+            bool removed = list.Remove(privilege);
+
+            if (list.Count == 0)
+                PrivilegesOn.Remove(table);
+
+            return removed;
         }
 
         public bool IsGrantedPrivilege(string table, Privilege privilege)
         {
-            //TODO DEADLINE 5: Return whether this profile is granted this privilege on this table
-            
-            return false;
+            if (string.IsNullOrWhiteSpace(table))
+                return false;
+
+            if (!PrivilegesOn.TryGetValue(table, out List<Privilege> list) || list == null)
+                return false;
+
+            return list.Contains(privilege);
         }
     }
 }
