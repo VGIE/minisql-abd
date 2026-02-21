@@ -110,9 +110,26 @@ namespace DbManager
             //DEADLINE 1.B: Delete all the rows where the condition is true. 
             //If the table or the column in the condition don't exist, return null and set LastErrorMessage (Check Constants.cs)
             //If everything goes ok, return true
-            
-            return false;
-            
+
+            Table table = TableByName(tableName);
+
+            if (table == null)
+            {
+                LastErrorMessage = Constants.TableDoesNotExistError;
+                return false;
+            }
+
+            if (table.ColumnByName(columnCondition.ColumnName) == null)
+            {
+                LastErrorMessage = Constants.ColumnDoesNotExistError;
+                return false;
+            }
+
+            table.DeleteWhere(columnCondition);
+
+            LastErrorMessage = Constants.DeleteSuccess;
+            return true;
+
         }
 
         public bool Update(string tableName, List<SetValue> columnNames, Condition columnCondition)
@@ -120,9 +137,35 @@ namespace DbManager
             //DEADLINE 1.B: Update in the given table all the rows where the condition is true using the SetValues
             //If the table or the column in the condition don't exist, return null and set LastErrorMessage (Check Constants.cs)
             //If everything goes ok, return true
-            
-            return false;
-            
+
+            Table table = TableByName(tableName);
+
+            if (table == null)
+            {
+                LastErrorMessage = Constants.TableDoesNotExistError;
+                return false;
+            }
+
+            if (table.ColumnByName(columnCondition.ColumnName) == null)
+            {
+                LastErrorMessage = Constants.ColumnDoesNotExistError;
+                return false;
+            }
+
+            foreach (SetValue setValue in columnNames)
+            {
+                if (table.ColumnByName(setValue.ColumnName) == null)
+                {
+                    LastErrorMessage = Constants.ColumnDoesNotExistError;
+                    return false;
+                }
+            }
+
+            table.Update(columnNames, columnCondition);
+
+            LastErrorMessage = Constants.UpdateSuccess;
+            return true;
+
         }
 
         
