@@ -49,12 +49,10 @@ namespace DbManager
         public ColumnDefinition GetColumn(int i)//besma
         {
             //TODO DEADLINE 1.A: Return the i-th column
-<<<<<<< HEAD
             if (i >= 0 && i < this.ColumnDefinitions.Count)
             {
                 return this.ColumnDefinitions[i];
             }
-=======
             int cont = 0;
             foreach (ColumnDefinition col in ColumnDefinitions)
             {
@@ -66,7 +64,6 @@ namespace DbManager
             }
 
             
->>>>>>> 2e2a99f9b94bfce50d8331259694ab1d1f23a835
             return null;
 
         }
