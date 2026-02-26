@@ -17,6 +17,7 @@ namespace DbManager
             //TODO DEADLINE 1.A: Initialize member variables
             this.Type = type;
             this.Name = name;
+
             
         }
 

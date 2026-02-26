@@ -95,16 +95,34 @@ namespace DbManager
         public string AsText()
         {
             //TODO DEADLINE 1.C: Return the row as string with all values separated by the delimiter
-            
-            return null;
+
+            if (this.Values == null || this.Values.Count == 0)
+            {
+                return "";
+            }
+            List<string> encodedValues = new List<string>();
+            foreach(string val in this.Values)
+            {
+                encodedValues.Add(Encode(val));
+            }
+            return string.Join(Delimiter,encodedValues);
             
         }
 
         public static Row Parse(List<ColumnDefinition> columns, string value)
         {
             //TODO DEADLINE 1.C: Parse a rowReturn the row as string with all values separated by the delimiter
-            
-            return null;
+            if (string.IsNullOrEmpty(value))
+            {
+                return null;
+            }
+            string[] parts = value.Split(new string[] { Delimiter }, StringSplitOptions.None);
+            List<string> decodedValues = new List<string>();
+            foreach (string part in parts)
+            {
+                decodedValues.Add(Decode(part));
+            }
+            return new Row(columns, decodedValues);
             
         }
     }
