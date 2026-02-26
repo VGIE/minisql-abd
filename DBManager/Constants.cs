@@ -28,6 +28,7 @@ namespace DbManager
         public const string AddUserSuccess = "User added";
         public const string DeleteUserSuccess = "User deleted";
         public const string SecurityProfileDoesNotExistError = Error + "Security profile does not exist";
+        public const string UserAlreadyExist = Error + "User Already Exists";
         public const string UserDoesNotExistError = Error + "Security profile does not exist";
         public const string PrivilegeDoesNotExistError = Error + "Privilege does not exist";
         public const string ProfileAlreadyHasPrivilege = Error + "Profile already has privilege";
