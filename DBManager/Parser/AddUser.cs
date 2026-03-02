@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using DbManager.Parser;
 using DbManager.Security;
-<<<<<<< HEAD
 
-=======
->>>>>>> master
 namespace DbManager
 {
  
@@ -19,7 +16,6 @@ namespace DbManager
 
         public AddUser(string username, string password, string profileName)
         {
-<<<<<<< HEAD
             Username = username;
             Password = password;
             ProfileName = profileName;
@@ -45,34 +41,6 @@ namespace DbManager
             profile.Users.Add(user);
 
             return Constants.AddUserSuccess;
-=======
-            //TODO DEADLINE 4: Initialize member variables
-            this.Username = username;
-            this.Password = password;
-            this.ProfileName = profileName;
-
-        }
-        public string Execute(Database database)
-        {
-            //TODO DEADLINE 5: Run the query and return the appropriate message
-            //UsersProfileIsNotGrantedRequiredPrivilege, SecurityProfileDoesNotExistError, AddUserSuccess
-            Profile profile = database.SecurityManager.ProfileByName(this.ProfileName);
-            if (profile == null)
-            {
-                return Constants.SecurityProfileDoesNotExistError;
-            }
-            if (database.SecurityManager.UserByName(this.Username) != null)
-            {
-                return Constants.UserAlreadyExist;
-            }
-            User user = new User(this.Username, this.Password);
-            profile.Users.Add(user);
-
-            return Constants.AddUserSuccess;
-
-
-            
->>>>>>> master
         }
 
     }
