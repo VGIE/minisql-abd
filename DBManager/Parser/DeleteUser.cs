@@ -9,7 +9,32 @@ namespace DbManager
 
         public DeleteUser(string username)
         {
+<<<<<<< HEAD
             Username = username;
+=======
+            //TODO DEADLINE 4: Initialize member variables
+            this.Username = username;
+
+        }
+        public string Execute(Database database)
+        {
+            //TODO DEADLINE 5: Run the query and return the appropriate message
+            //UsersProfileIsNotGrantedRequiredPrivilege, UserDoesNotExistError, DeleteUserSuccess
+            if(!database.IsUserAdmin())
+            {
+                return Constants.UsersProfileIsNotGrantedRequiredPrivilege;
+            }
+
+            if(database.SecurityManager.ProfileByUser(this.Username) == null)
+            {
+                return Constants.UserDoesNotExistError;
+            }
+
+            database.SecurityManager.RemoveProfile(this.Username);
+
+            return Constants.DeleteUserSuccess;
+            
+>>>>>>> master
         }
 
         public string Execute(Database database)
