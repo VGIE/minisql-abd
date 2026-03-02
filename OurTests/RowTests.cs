@@ -94,9 +94,56 @@ namespace OurTests
             Assert.True(row.IsTrue(conditionEqual));
             Assert.False(row.IsTrue(conditionNotEqual));
         }
+        [Fact]
+        public void AsTextTest()
+        {
+            List<ColumnDefinition> columns = new List<ColumnDefinition>()
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.String,"Name"),
+                new ColumnDefinition(ColumnDefinition.DataType.String,"City")
+            };
+            List<string> values = new List<string>() { "Danna", "Vitoria-Gasteiz" };
+            Row row = new Row(columns, values);
+            string text = row.AsText();
+            Assert.Equal("Danna:Vitoria-Gasteiz", text);
+        }
 
-        
+        [Fact]
+        public void AsTextEmpty()
+        {
+            List<ColumnDefinition> columns = new List<ColumnDefinition>();
+            List<string> values = new List<string>();
+            Row row = new Row(columns, values);
+            string text = row.AsText();
+            Assert.Equal("", text);
 
+        }
+        [Fact]
+        public void AsTextNull()
+        {
+            List<ColumnDefinition> columns = new List<ColumnDefinition>();
+            Row row = new Row(columns, null);
+            string text = row.AsText();
+            Assert.Equal("", text);
+
+        }
+        [Fact]
+        public void AsTextandParse()
+        {
+            List<ColumnDefinition> columns = new List<ColumnDefinition>()
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.String,"Name"),
+                new ColumnDefinition(ColumnDefinition.DataType.String,"Time")
+
+            };
+            List<string> values = new List<string>() { "Danna", "14:54" };
+            Row originalRow = new Row(columns, values);
+            string text = originalRow.AsText();
+            Row parsedRow = Row.Parse(columns, text);
+            Assert.Equal("Danna:14[SEPARATOR]54", text);
+            Assert.Equal("14:54", parsedRow.GetValue("Time"));
+
+        }
 
 
 
