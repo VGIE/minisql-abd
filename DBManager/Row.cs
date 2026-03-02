@@ -11,12 +11,20 @@ namespace DbManager
 
         public Row(List<ColumnDefinition> columnDefinitions, List<string> values)
         {
+<<<<<<< HEAD
             ColumnDefinitions = columnDefinitions ?? new List<ColumnDefinition>();
             Values = values != null ? new List<string>(values) : new List<string>();
+=======
+            //TODO DEADLINE 1.A: Initialize member variables
+            this.ColumnDefinitions = columnDefinitions;
+            this.Values = values;
+
+>>>>>>> master
         }
 
         public void SetValue(string columnName, string value)
         {
+<<<<<<< HEAD
             if (string.IsNullOrWhiteSpace(columnName))
                 return;
 
@@ -39,10 +47,22 @@ namespace DbManager
             }
 
             Values[index] = value;
+=======
+            //TODO DEADLINE 1.A: Given a column name and value, change the value in that column
+            var column = this.ColumnDefinitions.FirstOrDefault(col => col.Name == columnName);
+            if (column != null)
+            {
+                int index = this.ColumnDefinitions.IndexOf(column);
+                this.Values[index] = value;
+            }
+
+
+>>>>>>> master
         }
 
         public string GetValue(string columnName)
         {
+<<<<<<< HEAD
             if (string.IsNullOrWhiteSpace(columnName))
                 return null;
 
@@ -60,10 +80,24 @@ namespace DbManager
                 return null;
 
             return Values[index];
+=======
+            //TODO DEADLINE 1.A: Given a column name, return the value in that column
+            var column = this.ColumnDefinitions.FirstOrDefault(col => col.Name == columnName);
+            if (column != null)
+            {
+                int index = this.ColumnDefinitions.IndexOf(column);
+                    return (Values[index]);
+            }
+
+
+            return null;
+            
+>>>>>>> master
         }
 
         public bool IsTrue(Condition condition)
         {
+<<<<<<< HEAD
             if (condition == null || string.IsNullOrWhiteSpace(condition.ColumnName))
                 return false;
 
@@ -88,6 +122,21 @@ namespace DbManager
 
             string leftValue = Values[index];
             return condition.IsTrue(leftValue, column.Type);
+=======
+            //TODO DEADLINE 1.A: Given a condition (column name, operator and literal value, return whether it is true or not
+            //for this row. Check Condition.IsTrue method
+            var colName = condition.ColumnName;
+            var valueColumn = GetValue(colName);
+            var columnDef = this.ColumnDefinitions.FirstOrDefault(col => col.Name == colName);
+            if (columnDef != null)
+            {
+                return condition.IsTrue(valueColumn, columnDef.Type);
+            }
+           
+            
+            return false;
+            
+>>>>>>> master
         }
 
         private const string Delimiter = ":";
@@ -95,22 +144,44 @@ namespace DbManager
 
         private static string Encode(string value)
         {
+<<<<<<< HEAD
             if (value == null)
                 return "";
 
             return value.Replace(Delimiter, DelimiterEncoded);
+=======
+            //TODO DEADLINE 1.C: Encode the delimiter in value
+            if(string.IsNullOrEmpty(value)){
+                return value;
+            }
+
+            return value.Replace(Delimiter, DelimiterEncoded);
+            
+>>>>>>> master
         }
 
         private static string Decode(string value)
         {
+<<<<<<< HEAD
             if (value == null)
                 return "";
 
             return value.Replace(DelimiterEncoded, Delimiter);
+=======
+            //TODO DEADLINE 1.C: Decode the value doing the opposite of Encode()
+            if (string.IsNullOrEmpty(value))
+            {
+                return value;
+            }
+
+            return value.Replace(DelimiterEncoded, Delimiter);
+
+>>>>>>> master
         }
 
         public string AsText()
         {
+<<<<<<< HEAD
             if (Values == null || Values.Count == 0)
                 return "";
 
@@ -121,10 +192,26 @@ namespace DbManager
             }
 
             return string.Join(Delimiter, encoded);
+=======
+            //TODO DEADLINE 1.C: Return the row as string with all values separated by the delimiter
+
+            if (this.Values == null || this.Values.Count == 0)
+            {
+                return "";
+            }
+            List<string> encodedValues = new List<string>();
+            foreach(string val in this.Values)
+            {
+                encodedValues.Add(Encode(val));
+            }
+            return string.Join(Delimiter,encodedValues);
+            
+>>>>>>> master
         }
 
         public static Row Parse(List<ColumnDefinition> columns, string value)
         {
+<<<<<<< HEAD
             if (value == null)
                 value = "";
 
@@ -137,6 +224,21 @@ namespace DbManager
             }
 
             return new Row(columns, values);
+=======
+            //TODO DEADLINE 1.C: Parse a rowReturn the row as string with all values separated by the delimiter
+            if (string.IsNullOrEmpty(value))
+            {
+                return null;
+            }
+            string[] parts = value.Split(new string[] { Delimiter }, StringSplitOptions.None);
+            List<string> decodedValues = new List<string>();
+            foreach (string part in parts)
+            {
+                decodedValues.Add(Decode(part));
+            }
+            return new Row(columns, decodedValues);
+            
+>>>>>>> master
         }
     }
 }
