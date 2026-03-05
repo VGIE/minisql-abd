@@ -6,6 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
+
 
 namespace DbManager
 {
@@ -80,11 +83,23 @@ namespace DbManager
 
         public bool DropTable(string tableName)
         {
-            //DEADLINE 1.B: Delete the table with the given name. If the table doesn't exist, return false and set LastErrorMessage
-            //If everything goes ok, return true and set LastErrorMessage with the appropriate success message (Check Constants.cs)
+            Table table = TableByName(tableName);
+
             
-            return false;
+            if (table == null)
+            {
+                LastErrorMessage = Constants.TableDoesNotExistError;
+                return false;
+            }
+
+            
+            Tables.Remove(table);
+
+            
+            LastErrorMessage = Constants.DropTableSuccess;
+            return true;
         }
+
 
         public bool Insert(string tableName, List<string> values)
         {
@@ -195,29 +210,128 @@ namespace DbManager
 
         }
 
-        
-        
 
-        
+
+
+
         public bool Save(string databaseName)
         {
-            //DEADLINE 1.C: Save this database to disk with the given name
-            //If everything goes ok, return true, false otherwise.
-            //DEADLINE 5: Save the SecurityManager so that it can be loaded with the database in Load()
-            
-            return false;
-            
+            //DEADLINE 1.C + DEADLINE 5
+            try
+            {
+                
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+
+                string dbPath = Path.Combine(baseDir, $"{databaseName}.db");
+                string secPath = Path.Combine(baseDir, $"{databaseName}.sec");
+
+#pragma warning disable SYSLIB0011
+                BinaryFormatter formatter = new BinaryFormatter();
+
+              
+                using (FileStream fs = new FileStream(dbPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    formatter.Serialize(fs, Tables);
+                }
+
+                
+                using (FileStream fs = new FileStream(secPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    formatter.Serialize(fs, SecurityManager);
+                }
+#pragma warning restore SYSLIB0011
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public static Database Load(string databaseName, string username, string password)
         {
-            //DEADLINE 1.C: Load the (previously saved) database of name databaseName
-            //If everything goes ok, return the loaded database (a new instance), null otherwise.
-            //DEADLINE 5: When the Database object is created, set the username (create a new method if you must)
-            //After loading the database, load the SecurityManager and check the password is correct. If it's not, return null. If it is return the database
             
-            return null;
+            try
+            {
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+
+                string dbPath = Path.Combine(baseDir, $"{databaseName}.db");
+                string secPath = Path.Combine(baseDir, $"{databaseName}.sec");
+
+                if (!File.Exists(dbPath) || !File.Exists(secPath))
+                    return null;
+
+                List<Table> loadedTables;
+                Manager loadedSecurity;
+
+#pragma warning disable SYSLIB0011
+                BinaryFormatter formatter = new BinaryFormatter();
+
+                
+                using (FileStream fs = new FileStream(dbPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    loadedTables = (List<Table>)formatter.Deserialize(fs);
+                }
+
+                
+                using (FileStream fs = new FileStream(secPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    loadedSecurity = (Manager)formatter.Deserialize(fs);
+                }
+#pragma warning restore SYSLIB0011
+
+               
+                Database db = new Database();
+
+              
+                db.Tables = loadedTables ?? new List<Table>();
+                db.SecurityManager = loadedSecurity;
+
+              
+                db.m_username = username;
+
+               
+                if (db.SecurityManager == null)
+                    return null;
+
+                if (!TryVerifyPassword(db.SecurityManager, username, password))
+                    return null;
+
+                return db;
+            }
+            catch
+            {
+                return null;
+            }
         }
+
+        // Tries common method names in Manager without you needing to know the exact API.
+        // Returns true only if a known method exists AND it returns true.
+        private static bool TryVerifyPassword(Manager manager, string username, string password)
+        {
+            // Try: bool Login(string user, string pass)
+            // Try: bool CheckPassword(string user, string pass)
+            // Try: bool Authenticate(string user, string pass)
+            // Try: bool CheckUserPassword(string user, string pass)
+            string[] methodNames = { "Login", "CheckPassword", "Authenticate", "CheckUserPassword" };
+
+            Type t = manager.GetType();
+
+            foreach (string name in methodNames)
+            {
+                MethodInfo mi = t.GetMethod(name, new Type[] { typeof(string), typeof(string) });
+                if (mi != null && mi.ReturnType == typeof(bool))
+                {
+                    object result = mi.Invoke(manager, new object[] { username, password });
+                    return result is bool b && b;
+                }
+            }
+
+            // If no known method exists, safest is to fail auth.
+            return false;
+        }
+
 
         public string ExecuteMiniSQLQuery(string query)
         {

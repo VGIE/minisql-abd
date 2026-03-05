@@ -1,69 +1,95 @@
 using DbManager.Parser;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace DbManager
 {
     public class Row
     {
         private List<ColumnDefinition> ColumnDefinitions = new List<ColumnDefinition>();
-        public List<string> Values { get; set; }
+        public List<string> Values { get; set; } = new List<string>();
 
         public Row(List<ColumnDefinition> columnDefinitions, List<string> values)
         {
-            //TODO DEADLINE 1.A: Initialize member variables
-            this.ColumnDefinitions = columnDefinitions;
-            this.Values = values;
-
+            // Eðer null gelirse boþ listeye çek
+            ColumnDefinitions = columnDefinitions ?? new List<ColumnDefinition>();
+            Values = values != null ? new List<string>(values) : new List<string>();
         }
 
         public void SetValue(string columnName, string value)
         {
-            //TODO DEADLINE 1.A: Given a column name and value, change the value in that column
-            var column = this.ColumnDefinitions.FirstOrDefault(col => col.Name == columnName);
-            if (column != null)
+            if (string.IsNullOrWhiteSpace(columnName))
+                return;
+
+            int index = -1;
+            for (int i = 0; i < ColumnDefinitions.Count; i++)
             {
-                int index = this.ColumnDefinitions.IndexOf(column);
-                this.Values[index] = value;
+                if (ColumnDefinitions[i] != null && ColumnDefinitions[i].Name == columnName)
+                {
+                    index = i;
+                    break;
+                }
             }
 
+            if (index < 0)
+                return;
 
+            // Deðer listesi column index'ine kadar yoksa doldur
+            while (Values.Count <= index)
+            {
+                Values.Add("");
+            }
+
+            Values[index] = value;
         }
 
         public string GetValue(string columnName)
         {
-            //TODO DEADLINE 1.A: Given a column name, return the value in that column
-            var column = this.ColumnDefinitions.FirstOrDefault(col => col.Name == columnName);
-            if (column != null)
+            if (string.IsNullOrWhiteSpace(columnName))
+                return null;
+
+            int index = -1;
+            for (int i = 0; i < ColumnDefinitions.Count; i++)
             {
-                int index = this.ColumnDefinitions.IndexOf(column);
-                    return (Values[index]);
+                if (ColumnDefinitions[i] != null && ColumnDefinitions[i].Name == columnName)
+                {
+                    index = i;
+                    break;
+                }
             }
 
+            if (index < 0 || index >= Values.Count)
+                return null;
 
-            return null;
-            
+            return Values[index];
         }
 
         public bool IsTrue(Condition condition)
         {
-            //TODO DEADLINE 1.A: Given a condition (column name, operator and literal value, return whether it is true or not
-            //for this row. Check Condition.IsTrue method
-            var colName = condition.ColumnName;
-            var valueColumn = GetValue(colName);
-            var columnDef = this.ColumnDefinitions.FirstOrDefault(col => col.Name == colName);
-            if (columnDef != null)
+            if (condition == null || string.IsNullOrWhiteSpace(condition.ColumnName))
+                return false;
+
+            int index = -1;
+            ColumnDefinition column = null;
+
+            for (int i = 0; i < ColumnDefinitions.Count; i++)
             {
-                return condition.IsTrue(valueColumn, columnDef.Type);
+                if (ColumnDefinitions[i] != null && ColumnDefinitions[i].Name == condition.ColumnName)
+                {
+                    index = i;
+                    column = ColumnDefinitions[i];
+                    break;
+                }
             }
-           
-            
-            return false;
-            
+
+            if (index < 0 || column == null)
+                return false;
+
+            if (Values == null || index >= Values.Count)
+                return false;
+
+            string leftValue = Values[index];
+            return condition.IsTrue(leftValue, column.Type);
         }
 
         private const string Delimiter = ":";
@@ -71,59 +97,50 @@ namespace DbManager
 
         private static string Encode(string value)
         {
-            //TODO DEADLINE 1.C: Encode the delimiter in value
-            if(string.IsNullOrEmpty(value)){
-                return value;
-            }
+            if (value == null)
+                return "";
 
+            // ":" karakterini güvenli hale getir
             return value.Replace(Delimiter, DelimiterEncoded);
-            
         }
 
         private static string Decode(string value)
         {
-            //TODO DEADLINE 1.C: Decode the value doing the opposite of Encode()
-            if (string.IsNullOrEmpty(value))
-            {
-                return value;
-            }
+            if (value == null)
+                return "";
 
+            // Encode'un tersini yap
             return value.Replace(DelimiterEncoded, Delimiter);
-
         }
 
         public string AsText()
         {
-            //TODO DEADLINE 1.C: Return the row as string with all values separated by the delimiter
-
-            if (this.Values == null || this.Values.Count == 0)
-            {
+            if (Values == null || Values.Count == 0)
                 return "";
-            }
-            List<string> encodedValues = new List<string>();
-            foreach(string val in this.Values)
+
+            List<string> encoded = new List<string>();
+            for (int i = 0; i < Values.Count; i++)
             {
-                encodedValues.Add(Encode(val));
+                encoded.Add(Encode(Values[i]));
             }
-            return string.Join(Delimiter,encodedValues);
-            
+
+            return string.Join(Delimiter, encoded);
         }
 
         public static Row Parse(List<ColumnDefinition> columns, string value)
         {
-            //TODO DEADLINE 1.C: Parse a rowReturn the row as string with all values separated by the delimiter
-            if (string.IsNullOrEmpty(value))
+            if (value == null)
+                value = "";
+
+            string[] parts = value.Split(Delimiter, StringSplitOptions.None);
+            List<string> values = new List<string>();
+
+            for (int i = 0; i < parts.Length; i++)
             {
-                return null;
+                values.Add(Decode(parts[i]));
             }
-            string[] parts = value.Split(new string[] { Delimiter }, StringSplitOptions.None);
-            List<string> decodedValues = new List<string>();
-            foreach (string part in parts)
-            {
-                decodedValues.Add(Decode(part));
-            }
-            return new Row(columns, decodedValues);
-            
+
+            return new Row(columns, values);
         }
     }
 }

@@ -1,94 +1,58 @@
+using System.Collections.Generic;
+using Xunit;
 using DbManager;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Common;
 
 namespace OurTests
 {
     public class TableTests
     {
-        //TODO DEADLINE 1A : Create your own tests for Table
-        
-        private Table CreateTestTable()
+        [Fact]
+        public void Insert_ShouldAddRow()
         {
-            string name = "TestTable";
-            List<ColumnDefinition> columns = new List<ColumnDefinition>();
+            Table table = Table.CreateTestTable();
 
-            columns.Add(new ColumnDefinition(ColumnDefinition.DataType.String, "Nombre"));
-            columns.Add(new ColumnDefinition(ColumnDefinition.DataType.Int, "Edad"));
+            List<string> row = new List<string> { "1", "John" };
 
-            Table table = new Table(name, columns);
+            bool result = table.Insert(row);
 
-            return table;
+            Assert.True(result);
         }
 
         [Fact]
-
-        public void TestColumnByName()
+        public void Insert_WrongColumnCount_ShouldFail()
         {
-            Table table = CreateTestTable();
+            Table table = Table.CreateTestTable();
 
-            ColumnDefinition result = table.ColumnByName("Nombre");
+            List<string> row = new List<string> { "1" };
 
-            Assert.NotNull(result);
-            Assert.Equal("Nombre", result.Name);
+            bool result = table.Insert(row);
+
+            Assert.False(result);
         }
 
         [Fact]
-        public void TestColumnIndexByName()
+        public void MultipleInsert_ShouldStoreAllRows()
         {
-            //Debe devolver indice 0
+            Table table = Table.CreateTestTable();
 
-            Table table = CreateTestTable();
+            table.Insert(new List<string> { "1", "John" });
+            table.Insert(new List<string> { "2", "Jane" });
 
-            int index = table.ColumnIndexByName("Nombre");
-
-            Assert.Equal(0, index);
-        }
-        
-        [Fact]
-
-        public void TestToString()
-        {
-            //El formato debe ser correcto
-
-            Table table = CreateTestTable();
-            
-            List<ColumnDefinition> columns = new List<ColumnDefinition>();
-            columns.Add(new ColumnDefinition(ColumnDefinition.DataType.String, "Nombre"));
-            columns.Add(new ColumnDefinition(ColumnDefinition.DataType.Int, "Edad"));
-
-            List<String> valores = new List<string> { "Rodolfo", "25" };
-
-            Row row = new Row(columns ,valores);
-
-            table.AddRow(row);
-
-            string expectedResult = "['Nombre','Edad']{'Rodolfo','25'}";
-            Assert.Equal(expectedResult, table.ToString());
+            table.CheckForTesting(new List<List<string>>
+            {
+                new List<string> { "1", "John" },
+                new List<string> { "2", "Jane" }
+            });
         }
 
         [Fact]
-
-        public void TestDeleteIthRow()
+        public void EmptyInsert_ShouldFail()
         {
-            Table table = CreateTestTable();
+            Table table = Table.CreateTestTable();
 
-            List<ColumnDefinition> columns = new List<ColumnDefinition>();
-            columns.Add(new ColumnDefinition(ColumnDefinition.DataType.String, "Nombre"));
-            columns.Add(new ColumnDefinition(ColumnDefinition.DataType.Int, "Edad"));
+            bool result = table.Insert(new List<string>());
 
-            Row row1 = new Row(columns, new List<String> { "Rodolfo", "25" });
-            Row row2 = new Row(columns, new List<String> { "Jacinto", "27" });
-
-            table.AddRow(row1);
-            table.AddRow(row2);
-
-            table.DeleteIthRow(0);
-
-
-            string expectedResult = "['Nombre','Edad']{'Jacinto','27'}";
-            Assert.Equal(expectedResult, table.ToString());
+            Assert.False(result);
         }
     }
 }

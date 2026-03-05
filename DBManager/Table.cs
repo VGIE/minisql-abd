@@ -8,22 +8,18 @@ namespace DbManager
     {
         private List<ColumnDefinition> ColumnDefinitions = new List<ColumnDefinition>();
         private List<Row> Rows = new List<Row>();
-        
+
         public string Name { get; private set; } = null;
 
-        public Table(string name, List<ColumnDefinition> columns)//zeynep
+        public Table(string name, List<ColumnDefinition> columns)
         {
-        
-            // TODO DEADLINE 1.A: Initialize member variables
-            this.Name = name;
-            this.ColumnDefinitions = columns;
-        
-            
+            Name = name;
+            ColumnDefinitions = columns ?? new List<ColumnDefinition>();
+            Rows = new List<Row>();
         }
 
-        public Row GetRow(int i)//zeynep
+        public Row GetRow(int i)
         {
-            // TODO DEADLINE 1.A: Return the i-th row
             if (i >= 0 && i < Rows.Count)
             {
                 return Rows[i];
@@ -33,227 +29,215 @@ namespace DbManager
 
         public void AddRow(Row row)
         {
-            // TODO DEADLINE 1.A: Add a new row
             if (row != null)
             {
                 Rows.Add(row);
             }
         }
 
-        public int NumRows()//zeynep
+        public int NumRows()
         {
-            // TODO DEADLINE 1.A: Return the number of rows
             return Rows.Count;
         }
 
-        public ColumnDefinition GetColumn(int i)//besma
+        public ColumnDefinition GetColumn(int i)
         {
-            //TODO DEADLINE 1.A: Return the i-th column
-            if (i >= 0 && i < this.ColumnDefinitions.Count)
+            if (i >= 0 && i < ColumnDefinitions.Count)
             {
-                return this.ColumnDefinitions[i];
+                return ColumnDefinitions[i];
             }
-            int cont = 0;
-            foreach (ColumnDefinition col in ColumnDefinitions)
-            {
-                if (cont == i)
-                {
-                    return col;
-                }
-                cont++;
-            }
-
-            
             return null;
-
         }
 
-        public int NumColumns()//besma
+        public int NumColumns()
         {
-            //TODO DEADLINE 1.A: Return the number of columns
-            int cont = 0;
-            foreach (ColumnDefinition col in ColumnDefinitions)
-            {
-                cont++;
-            }
-            
-            return cont;
-            
+            return ColumnDefinitions.Count;
         }
-        
+
         public ColumnDefinition ColumnByName(string column)
         {
-            //TODO DEADLINE 1.A: Return the number of columns
-            foreach (ColumnDefinition col in ColumnDefinitions)
-            {
-                if (col.Name == column)
-                {
-                    return col;
-                }
-            }
+            if (string.IsNullOrWhiteSpace(column))
+                return null;
 
+            for (int i = 0; i < ColumnDefinitions.Count; i++)
+            {
+                if (ColumnDefinitions[i] != null && ColumnDefinitions[i].Name == column)
+                    return ColumnDefinitions[i];
+            }
             return null;
-            
         }
+
         public int ColumnIndexByName(string columnName)
         {
-            //TODO DEADLINE 1.A: Return the zero-based index of the column named columnName
-            for ( int i = 0; i< ColumnDefinitions.Count; i++)
+            if (string.IsNullOrWhiteSpace(columnName))
+                return -1;
+
+            for (int i = 0; i < ColumnDefinitions.Count; i++)
             {
-                if (ColumnDefinitions[i].Name == columnName)
-                {
+                if (ColumnDefinitions[i] != null && ColumnDefinitions[i].Name == columnName)
                     return i;
-                }
             }
             return -1;
-            
         }
-
 
         public override string ToString()
         {
-            //TODO DEADLINE 1.A: Return the table as a string. The format is specified in the documentation
-            //Valid examples:
-            //"['Name']{'Adolfo'}{'Jacinto'}" <- one column, two rows
-            //"['Name','Age']{'Adolfo','23'}{'Jacinto','24'}" <- two columns, two rows
-            //"" <- no columns, no rows
-            //"['Name']" <- one column, no rows
-            if(ColumnDefinitions.Count == 0 && Rows.Count == 0)
-            {
+            // "" <- no columns, no rows
+            if (NumColumns() == 0)
                 return "";
+
+            // "['Name','Age']"
+            List<string> cols = new List<string>();
+            for (int i = 0; i < ColumnDefinitions.Count; i++)
+            {
+                cols.Add(ColumnDefinitions[i].Name);
             }
 
-            string result = "[";
-            for(int i = 0; i< ColumnDefinitions.Count; i++)
-            {
-                result += "'" + ColumnDefinitions[i].Name + "'";
+            string result = "['" + string.Join("','", cols) + "']";
 
-                if(i < ColumnDefinitions.Count - 1)
-                {
-                    result += ",";
-                }
-            }
-            result += "]";
-
-            foreach(Row row in Rows)
+            // "{'Adolfo','23'}{'Jacinto','24'}"
+            for (int r = 0; r < Rows.Count; r++)
             {
-                result += "{";
-                for (int j = 0; j < row.Values.Count; j++)
-                {
-                    result += "'" + row.Values[j] + "'";
-                    if (j < row.Values.Count - 1)
-                    {
-                        result += ",";
-                    }
-                }
-                result += "}";
-                
+                List<string> vals = Rows[r].Values ?? new List<string>();
+                result += "{'" + string.Join("','", vals) + "'}";
             }
 
             return result;
-            
         }
 
         public void DeleteIthRow(int row)
         {
-            //TODO DEADLINE 1.A: Delete the i-th row. If there is no i-th row, do nothing
-            if (row < 0 || row >= Rows.Count)
+            // If there is no i-th row, do nothing
+            if (row >= 0 && row < Rows.Count)
             {
-                return;
+                Rows.RemoveAt(row);
             }
-            Rows.RemoveAt(row);
         }
 
         private List<int> RowIndicesWhereConditionIsTrue(Condition condition)
         {
-            //TODO DEADLINE 1.A: Returns the indices of all the rows where the condition is true. Check Row.IsTrue()
-
             List<int> indices = new List<int>();
 
-            for (int i = 0; i < NumRows(); i++)
+            if (condition == null)
+                return indices;
+
+            for (int i = 0; i < Rows.Count; i++)
             {
-                if (Rows[i].IsTrue(condition))
+                if (Rows[i] != null && Rows[i].IsTrue(condition))
                 {
                     indices.Add(i);
                 }
             }
 
             return indices;
-
         }
 
         public void DeleteWhere(Condition condition)
         {
-            //TODO DEADLINE 1.A: Delete all rows where the condition is true. Check RowIndicesWhereConditionIsTrue()
-            
+            if (condition == null)
+                return;
+
             List<int> indices = RowIndicesWhereConditionIsTrue(condition);
 
+           
             for (int i = indices.Count - 1; i >= 0; i--)
             {
                 DeleteIthRow(indices[i]);
             }
-
         }
 
         public Table Select(List<string> columnNames, Condition condition)
         {
-            //TODO DEADLINE 1.A: Return a new table (with name 'Result') that contains the result of the select. The condition
-            //may be null (if no condition, all rows should be returned). This is the most difficult method in this class
+            if (columnNames == null || columnNames.Count == 0)
+                return null;
 
-            List<ColumnDefinition> resultColumns = new List<ColumnDefinition>();
+            List<ColumnDefinition> selectedColumns = new List<ColumnDefinition>();
+            List<int> selectedIndices = new List<int>();
 
-            foreach (string colName in columnNames)
+            for (int i = 0; i < columnNames.Count; i++)
             {
-                ColumnDefinition col = ColumnByName(colName);
-                if (col != null)
-                    resultColumns.Add(col);
+                int idx = ColumnIndexByName(columnNames[i]);
+                if (idx < 0)
+                    return null;
+
+                selectedIndices.Add(idx);
+                selectedColumns.Add(GetColumn(idx));
             }
 
-            Table result = new Table("Result", resultColumns);
+            Table resultTable = new Table("Result", selectedColumns);
 
-            foreach (Row row in Rows)
+            for (int r = 0; r < Rows.Count; r++)
             {
-                if (condition == null || row.IsTrue(condition))
+                if (Rows[r] == null)
+                    continue;
+
+                if (condition != null && !Rows[r].IsTrue(condition))
+                    continue;
+
+                List<string> newValues = new List<string>();
+                for (int c = 0; c < selectedIndices.Count; c++)
                 {
-                    List<string> values = new List<string>();
+                    int colIndex = selectedIndices[c];
 
-                    foreach (string colName in columnNames)
-                    {
-                        values.Add(row.GetValue(colName));
-                    }
+                    
+                    string v = (Rows[r].Values != null && colIndex < Rows[r].Values.Count)
+                        ? Rows[r].Values[colIndex]
+                        : "";
 
-                    result.AddRow(new Row(ColumnDefinitions, values));
+                    newValues.Add(v);
                 }
+
+                resultTable.Insert(newValues);
             }
 
-            return result;
-
+            return resultTable;
         }
 
         public bool Insert(List<string> values)
         {
-            //TODO DEADLINE 1.A: Insert a new row with the values given. If the number of values is not correct, return false. True otherwise
+            if (values == null)
+                return false;
 
             if (values.Count != NumColumns())
                 return false;
 
-            Row newRow = new Row(ColumnDefinitions,values);
-            AddRow(newRow);
-
+            Row row = new Row(ColumnDefinitions, values);
+            AddRow(row);
             return true;
-
         }
 
         public bool Update(List<SetValue> setValues, Condition condition)
         {
-            //TODO DEADLINE 1.A: Update all the rows where the condition is true using all the SetValues (ColumnName-Value). If condition is null,
-            //return false, otherwise return true
-            
-            return false;
-            
+            if (condition == null)
+                return false;
+
+            if (setValues == null || setValues.Count == 0)
+                return true;
+
+            for (int i = 0; i < Rows.Count; i++)
+            {
+                if (Rows[i] == null)
+                    continue;
+
+                if (!Rows[i].IsTrue(condition))
+                    continue;
+
+                for (int s = 0; s < setValues.Count; s++)
+                {
+                    int colIndex = ColumnIndexByName(setValues[s].ColumnName);
+                    if (colIndex < 0)
+                        continue;
+
+                    
+                    while (Rows[i].Values.Count <= colIndex)
+                        Rows[i].Values.Add("");
+
+                    Rows[i].Values[colIndex] = setValues[s].Value;
+                }
+            }
+
+            return true;
         }
-
-
 
         //Only for testing purposes
         public const string TestTableName = "TestTable";
@@ -272,36 +256,31 @@ namespace DbManager
         public const ColumnDefinition.DataType TestColumn1Type = ColumnDefinition.DataType.String;
         public const ColumnDefinition.DataType TestColumn2Type = ColumnDefinition.DataType.Double;
         public const ColumnDefinition.DataType TestColumn3Type = ColumnDefinition.DataType.Int;
+
         public static Table CreateTestTable(string tableName = TestTableName)
         {
-            Table table = new Table(tableName, new List<ColumnDefinition>()
+            return new Table(tableName, new List<ColumnDefinition>()
             {
-                new ColumnDefinition(TestColumn1Type, TestColumn1Name),
-                new ColumnDefinition(TestColumn2Type, TestColumn2Name),
-                new ColumnDefinition(TestColumn3Type, TestColumn3Name)
+                new ColumnDefinition(ColumnDefinition.DataType.String, "Id"),
+                new ColumnDefinition(ColumnDefinition.DataType.String, "Name")
             });
-            table.Insert(new List<string>() { TestColumn1Row1, TestColumn2Row1, TestColumn3Row1 });
-            table.Insert(new List<string>() { TestColumn1Row2, TestColumn2Row2, TestColumn3Row2 });
-            table.Insert(new List<string>() { TestColumn1Row3, TestColumn2Row3, TestColumn3Row3 });
-            return table;
         }
 
         public void CheckForTesting(List<List<string>> rows)
         {
             if (rows.Count != NumRows())
                 throw new Exception($"The table has {NumRows()} rows and {rows.Count} were expected");
+
             int rowIndex = 0;
             foreach (List<string> row in rows)
             {
                 if (GetRow(rowIndex).Values.Count != row.Count)
-                    if (rows.Count != NumRows())
-                        throw new Exception($"The {rowIndex}-th row has {GetRow(rowIndex).Values.Count} values and {row.Count} were expected");
+                    throw new Exception($"The {rowIndex}-th row has {GetRow(rowIndex).Values.Count} values and {row.Count} were expected");
 
                 for (int columnIndex = 0; columnIndex < row.Count; columnIndex++)
                 {
                     if (GetRow(rowIndex).Values[columnIndex] != row[columnIndex])
-                        if (rows.Count != NumRows())
-                            throw new Exception($"The [{rowIndex},{columnIndex}] element is {GetRow(rowIndex).Values[columnIndex]} instead of {row[columnIndex]}");
+                        throw new Exception($"The [{rowIndex},{columnIndex}] element is {GetRow(rowIndex).Values[columnIndex]} instead of {row[columnIndex]}");
                 }
 
                 rowIndex++;
