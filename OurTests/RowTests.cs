@@ -144,8 +144,33 @@ namespace OurTests
             Assert.Equal("14:54", parsedRow.GetValue("Time"));
 
         }
+        [Fact]
+        public void ParseTest()
+        {
+            List<ColumnDefinition> columns = new List<ColumnDefinition>()
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.String,"Name"),
+                new ColumnDefinition(ColumnDefinition.DataType.String,"City")
 
-
-
+            };
+            string text = ("Danna:Vitoria-Gasteiz");
+            Row parsedRoW = Row.Parse(columns, text);
+            Assert.NotNull(parsedRoW);
+            Assert.Equal(2, parsedRoW.Values.Count);
+            Assert.Equal("Danna", parsedRoW.GetValue("Name"));
+            Assert.Equal("Vitoria-Gasteiz", parsedRoW.GetValue("City"));
+        }
+        [Fact]
+        public void ParseNullTest()
+        {
+            List<ColumnDefinition> columns = new List<ColumnDefinition>()
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.String,"Name")
+            };
+            Row parsedRow = Row.Parse(columns, null);
+            Assert.NotNull(parsedRow);
+            Assert.Single(parsedRow.Values);
+            Assert.Equal("", parsedRow.GetValue("Name"));
+        }
     }
 }
