@@ -78,7 +78,7 @@ namespace OurTests
         }
 
         [Fact]
-        public void TestToString()
+        public void ToStringTest()
         {
             Table table = Table.CreateTestTable();
 
@@ -97,7 +97,7 @@ namespace OurTests
         }
 
         [Fact]
-        public void TestToString_EmptyTable()
+        public void ToStringTest_EmptyTable()
         {
             Table table = Table.CreateTestTable();
 
@@ -107,7 +107,7 @@ namespace OurTests
         }
 
         [Fact]
-        public void DeleteIthRow_ShouldReturnSecondCreatedRow()
+        public void DeleteIthRow_ShouldDeleteFirstCreatedRow()
         {
             Table table = Table.CreateTestTable();
 
@@ -123,6 +123,43 @@ namespace OurTests
             table.DeleteIthRow(0);
 
             string esperado = "['Id','Name']{'2','B'}";
+            Assert.Equal(esperado, table.ToString());
+        }
+
+        [Fact]
+        public void DeleteIthRow_DeleteOutOfRangeRow()
+        {
+            Table table = Table.CreateTestTable();
+            List<ColumnDefinition> columns = new List<ColumnDefinition>()
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.String, "Id"),
+                new ColumnDefinition(ColumnDefinition.DataType.String, "Name")
+            };
+            table.AddRow(new Row(columns, new List<string> { "1", "Prueba" }));
+
+            table.DeleteIthRow(5);
+            table.DeleteIthRow(-1);
+
+            string esperado = "['Id','Name']{'1','Prueba'}";
+            Assert.Equal(esperado, table.ToString());
+        }
+
+        [Fact]
+        public void DeleteIthRow_DeleteLastRow()
+        {
+            Table table = Table.CreateTestTable();
+            List<ColumnDefinition> columns = new List<ColumnDefinition>()
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.String, "Id"),
+                new ColumnDefinition(ColumnDefinition.DataType.String, "Name")
+            };
+
+            table.AddRow(new Row(columns, new List<string> { "1", "Primera" }));
+            table.AddRow(new Row(columns, new List<string> { "2", "Ultima" }));
+
+            table.DeleteIthRow(1);
+
+            string esperado = "['Id','Name']{'1','Primera'}";
             Assert.Equal(esperado, table.ToString());
         }
     }
