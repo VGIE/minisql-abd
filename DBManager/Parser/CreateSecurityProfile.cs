@@ -30,7 +30,7 @@ namespace DbManager
             return Constants.CreateSecurityProfileSuccess;
         
             
-            if (database.SecurityManager.ProfileByName(ProfileName) == null)
+            if(database.SecurityManager.ProfileByName(ProfileName) == null)
             {
                 database.SecurityManager.AddProfile(new Profile { Name = ProfileName });
             }
