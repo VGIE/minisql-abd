@@ -35,28 +35,28 @@ namespace DbManager
             {
                 int e1 = int.Parse(value);
                 int e2 = int.Parse(LiteralValue);
-                if (Operator == "<")
+                if (Operator == <)
                 {
                     return e1 < e2;
                 }
-                  if (Operator == ">")
+                  if (Operator == >)
                 {
                     return e1 > e2;
                 }
-                  if (Operator == "=")
+                  if (Operator == =)
                 {
                     return e1 == e2;
                 }
                 
-                  if (Operator == "<=")
+                  if (Operator == <=)
                 {
                     return e1 <= e2;
                 }
-                  if (Operator == ">=")
+                  if (Operator == >=)
                 {
                     return e1 >= e2;
                 }
-                  if (Operator == "!=")
+                  if (Operator == !=)
                 {
                     return e1 != e2;
                 }
@@ -66,19 +66,19 @@ namespace DbManager
             if (type == ColumnDefinition.DataType.String)
             {
                 int aux = string.Compare(value, LiteralValue);
-                if (Operator == "<")
+                if (Operator == <)
                 {
                     return aux <0;
                 }
-                if (Operator == ">")
+                if (Operator == >)
                 {
                     return aux > 0;
                 }
-                if (Operator == "=")
+                if (Operator == =)
                 {
                     return aux ==0;
                 }
-                if (Operator == "!=")
+                if (Operator == !=)
                 {
                     return aux !=0;
                 }
