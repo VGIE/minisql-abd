@@ -82,24 +82,36 @@ namespace DbManager
 
         public override string ToString()
         {
-            // "" <- no columns, no rows
-            if (NumColumns() == 0)
+            if (ColumnDefinitions.Count == 0)
                 return "";
 
-            // "['Name','Age']"
-            List<string> cols = new List<string>();
+            string result = "[";
             for (int i = 0; i < ColumnDefinitions.Count; i++)
             {
-                cols.Add(ColumnDefinitions[i].Name);
+                result += "'" + ColumnDefinitions[i].Name + "'";
+
+                if (i < ColumnDefinitions.Count - 1)
+                {
+                    result += ",";
+                }
             }
+            result += "]";
 
-            string result = "['" + string.Join("','", cols) + "']";
-
-            // "{'Adolfo','23'}{'Jacinto','24'}"
             for (int r = 0; r < Rows.Count; r++)
             {
-                List<string> vals = Rows[r].Values ?? new List<string>();
-                result += "{'" + string.Join("','", vals) + "'}";
+                result += "{";
+                List<string> vals = Rows[r].Values;
+
+                for (int v = 0; v < vals.Count; v++)
+                {
+                    result += "'" + vals[v] + "'";
+
+                    if (v < vals.Count - 1)
+                    {
+                        result += ",";
+                    }
+                }
+                result += "}";
             }
 
             return result;
@@ -107,7 +119,7 @@ namespace DbManager
 
         public void DeleteIthRow(int row)
         {
-            // If there is no i-th row, do nothing
+            //if there is no i-th row, do nothing
             if (row >= 0 && row < Rows.Count)
             {
                 Rows.RemoveAt(row);

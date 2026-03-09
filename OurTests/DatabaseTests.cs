@@ -105,5 +105,60 @@ namespace OurTests
             Assert.False(result);
             Assert.Equal(Constants.TableDoesNotExistError, database.LastErrorMessage);
         }
+<<<<<<< HEAD
+=======
+        [Fact]
+        public void InsertWrongTest()
+        {
+            Database database = Database.CreateTestDatabase();
+            List<string> badRow = new List<string>()
+            {
+                "1","Danna","Bad"
+
+            };
+            bool result = database.Insert("TestTable", badRow);
+            Assert.False(result);
+            Assert.Equal(Constants.ColumnCountsDontMatch, database.LastErrorMessage);
+
+        }
+        [Fact]
+        public void SelectVoidTest()
+        {
+            Database database = Database.CreateTestDatabase();
+            List<string> columns = new List<string>()
+            {
+                "Name"
+            };
+            Table result = database.Select("TableNull", columns, null);
+            Assert.Null(result);
+            Assert.Equal(Constants.TableDoesNotExistError, database.LastErrorMessage);
+        }
+        [Fact]
+        public void SelectWrongTest()
+        {
+            Database database = Database.CreateTestDatabase();
+            List<string> columns = new List<string>()
+            { "Id","Ciudad"};
+            Table result = database.Select("TestTable", columns, null);
+            Assert.Null(result);
+            Assert.Equal(Constants.ColumnDoesNotExistError, database.LastErrorMessage);
+        }
+        [Fact]
+        public void SelectSuccessTest()
+        {
+            Database database = Database.CreateTestDatabase();
+            List<string> select = new List<string>()
+            {
+                "Id"
+            };
+            Table result = database.Select("TestTable", select, null);
+            Assert.NotNull(result);
+            Assert.Equal(1, result.NumColumns());
+            Assert.Equal("Id", result.GetColumn(0).Name);
+
+        }
+
+
+>>>>>>> master
     }
 }
