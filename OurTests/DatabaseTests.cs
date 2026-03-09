@@ -61,5 +61,20 @@ namespace OurTests
             Assert.False(result);
             Assert.Equal(Constants.TableDoesNotExistError, database.LastErrorMessage);
         }
+        [Fact]
+        public void InsertWrongTest()
+        {
+            Database database = Database.CreateTestDatabase();
+            List<string> badRow = new List<string>()
+            {
+                "1","Danna","Bad"
+
+            };
+            bool result = database.Insert("TestTable", badRow);
+            Assert.False(result);
+            Assert.Equal(Constants.ColumnCountsDontMatch, database.LastErrorMessage);
+
+        }
+
     }
 }
