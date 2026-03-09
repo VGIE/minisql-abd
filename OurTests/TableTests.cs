@@ -125,5 +125,52 @@ namespace OurTests
             string esperado = "['Id','Name']{'2','B'}";
             Assert.Equal(esperado, table.ToString());
         }
+
+        [Fact]
+        public void RowIsConditionTrueStringTest()
+        {
+
+        }
+
+        [Fact]
+        public void TableSelectWithoutConditionTest()
+        {
+        }
+
+        [Fact]
+        public void TableDeleteRowsWhereConditionIsTrueIntTest()
+        {
+
+        }
+
+        [Fact]
+        public void TableDeleteRowsWhereConditionIsTrueStringTest()
+        {
+
+        }
+
+        [Fact]
+        public void RowIsConditionTrueDoubleTest()
+        {
+
+        }
+
+        [Fact]
+        public void RowIsConditionTrueIntTest()
+        {
+
+        }
+
+        [Fact]
+        public void TableDeleteRowsWhereConditionIsTrueDoubleTest()
+        {
+
+        }
+
+        [Fact]
+        public void TableSelectWithoutConditionAndDisorderedColumnsTest()
+        {
+
+        }
     }
 }

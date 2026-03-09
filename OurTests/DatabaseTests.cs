@@ -1,5 +1,6 @@
-using System.ComponentModel.DataAnnotations;
 using DbManager;
+using DbManager.Parser;
+using System.ComponentModel.DataAnnotations;
 
 namespace OurTests
 {
@@ -60,6 +61,55 @@ namespace OurTests
             bool result = database.Insert("TablaInventada", newRow);
             Assert.False(result);
             Assert.Equal(Constants.TableDoesNotExistError, database.LastErrorMessage);
+        }
+
+        [Fact]
+        public void DeleteWhereTest()
+        {
+            Database database = Database.CreateTestDatabase();
+
+            Condition condition = new Condition("Id", "=", "1");
+
+            bool result = database.DeleteWhere("TestTable", condition);
+
+            Assert.True(result);
+            Assert.Equal(Constants.DeleteSuccess, database.LastErrorMessage);
+        }
+
+        [Fact]
+        public void UpdateTest()
+        {
+            Database database = Database.CreateTestDatabase();
+
+            List<SetValue> setValues = new List<SetValue>()
+            {
+                new SetValue("Name", "David")
+            };
+
+            Condition condition = new Condition("Id", "=", "1");
+
+            bool result = database.Update("TestTable", setValues, condition);
+
+            Assert.True(result);
+            Assert.Equal(Constants.UpdateSuccess, database.LastErrorMessage);
+        }
+
+        [Fact]
+        public void UpdateErrorsTest()
+        {
+            Database database = Database.CreateTestDatabase();
+
+            List<SetValue> setValues = new List<SetValue>()
+            {
+                new SetValue("FakeColumn", "David")
+            };
+
+            Condition condition = new Condition("Id", "=", "1");
+
+            bool result = database.Update("TestTable", setValues, condition);
+
+            Assert.False(result);
+            Assert.Equal(Constants.ColumnDoesNotExistError, database.LastErrorMessage);
         }
     }
 }
