@@ -54,5 +54,76 @@ namespace OurTests
 
             Assert.False(result);
         }
+
+
+        [Fact]
+        public void ColumnByName_ReturnsColumnWithGivenName()
+        {
+            Table table = Table.CreateTestTable();
+
+            ColumnDefinition result = table.ColumnByName("Name");
+
+            Assert.NotNull(result);
+            Assert.Equal("Name", result.Name);
+        }
+
+        [Fact]
+        public void ColumnIndexByName_ShouldReturnFirstColumn()
+        {
+            Table table = Table.CreateTestTable();
+
+            int index = table.ColumnIndexByName("Id");
+
+            Assert.Equal(0, index);
+        }
+
+        [Fact]
+        public void TestToString()
+        {
+            Table table = Table.CreateTestTable();
+
+            List<ColumnDefinition> columns = new List<ColumnDefinition>()
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.String, "Id"),
+                new ColumnDefinition(ColumnDefinition.DataType.String, "Name")
+            };
+
+            List<string> valores = new List<string> { "001", "Rodolfo" };
+            Row row = new Row(columns, valores);
+            table.AddRow(row);
+
+            string esperado = "['Id','Name']{'001','Rodolfo'}";
+            Assert.Equal(esperado, table.ToString());
+        }
+
+        [Fact]
+        public void TestToString_EmptyTable()
+        {
+            Table table = Table.CreateTestTable();
+
+            string resultado = table.ToString();
+
+            Assert.Equal("['Id','Name']", resultado);
+        }
+
+        [Fact]
+        public void DeleteIthRow_ShouldReturnSecondCreatedRow()
+        {
+            Table table = Table.CreateTestTable();
+
+            List<ColumnDefinition> columns = new List<ColumnDefinition>()
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.String, "Id"),
+                new ColumnDefinition(ColumnDefinition.DataType.String, "Name")
+            };
+
+            table.AddRow(new Row(columns, new List<string> { "1", "A" }));
+            table.AddRow(new Row(columns, new List<string> { "2", "B" }));
+
+            table.DeleteIthRow(0);
+
+            string esperado = "['Id','Name']{'2','B'}";
+            Assert.Equal(esperado, table.ToString());
+        }
     }
 }
