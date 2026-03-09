@@ -107,7 +107,7 @@ namespace DbManager
 
         public void DeleteIthRow(int row)
         {
-            // If there is no i-th row, do nothing
+            //if there is no i-th row, do nothing
             if (row >= 0 && row < Rows.Count)
             {
                 Rows.RemoveAt(row);
