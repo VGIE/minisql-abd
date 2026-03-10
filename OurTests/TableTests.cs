@@ -129,12 +129,33 @@ namespace OurTests
         [Fact]
         public void RowIsConditionTrueStringTest()
         {
+            List<ColumnDefinition> columns = new List<ColumnDefinition>()
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.String, "Name")
+            };
 
+            Row row = new Row(columns, new List<string> { "David" });
+
+            Condition condition = new Condition("Name", "=", "David");
+
+            Assert.True(row.IsTrue(condition));
         }
 
         [Fact]
         public void TableSelectWithoutConditionTest()
         {
+            Table table = Table.CreateTestTable();
+
+            table.Insert(new List<string> { "1", "David" });
+            table.Insert(new List<string> { "2", "Anne" });
+
+            Table result = table.Select(new List<string> { "Id", "Name" }, null);
+
+            result.CheckForTesting(new List<List<string>>
+            {
+                new List<string> { "1", "David" },
+                new List<string> { "2", "Anne" }
+            });
         }
 
         [Fact]
