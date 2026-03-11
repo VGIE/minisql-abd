@@ -161,19 +161,60 @@ namespace OurTests
         [Fact]
         public void TableDeleteRowsWhereConditionIsTrueIntTest()
         {
+            List<ColumnDefinition> columns = new List<ColumnDefinition>()
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.Int, "Age")
+            };
 
+            Table table = new Table("Test", columns);
+
+            table.Insert(new List<string> { "10" });
+            table.Insert(new List<string> { "20" });
+            table.Insert(new List<string> { "30" });
+
+            Condition condition = new Condition("Age", ">", "18");
+
+            table.DeleteWhere(condition);
+
+            table.CheckForTesting(new List<List<string>>
+            {
+                new List<string> { "10" }
+            });
         }
 
         [Fact]
         public void TableDeleteRowsWhereConditionIsTrueStringTest()
         {
+            Table table = Table.CreateTestTable();
 
+            table.Insert(new List<string> { "1", "David" });
+            table.Insert(new List<string> { "2", "Anne" });
+            table.Insert(new List<string> { "3", "Danna" });
+
+            Condition condition = new Condition("Name", "=", "David");
+
+            table.DeleteWhere(condition);
+
+            table.CheckForTesting(new List<List<string>>
+            {
+                new List<string> { "2", "Anne" },
+                new List<string> { "3", "Danna" }
+            });
         }
 
         [Fact]
         public void RowIsConditionTrueDoubleTest()
         {
+            List<ColumnDefinition> columns = new List<ColumnDefinition>()
+        {
+            new ColumnDefinition(ColumnDefinition.DataType.Double, "Height")
+        };
 
+            Row row = new Row(columns, new List<string> { "1.70" });
+
+            Condition condition = new Condition("Height", ">", "1.60");
+
+            Assert.False(row.IsTrue(condition));
         }
 
         [Fact]
