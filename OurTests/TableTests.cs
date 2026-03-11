@@ -136,12 +136,61 @@ namespace OurTests
                 new ColumnDefinition(ColumnDefinition.DataType.String, "Name")
             };
             table.AddRow(new Row(columns, new List<string> { "1", "Prueba" }));
+            List<ColumnDefinition> columns = new List<ColumnDefinition>()
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.String, "Name")
+            };
+
+            Row row = new Row(columns, new List<string> { "David" });
+
+            Condition condition = new Condition("Name", "=", "David");
+
+            Assert.True(row.IsTrue(condition));
+        }
+
+        [Fact]
+        public void TableSelectWithoutConditionTest()
+        {
+            Table table = Table.CreateTestTable();
+
+            table.Insert(new List<string> { "1", "David" });
+            table.Insert(new List<string> { "2", "Anne" });
+
+            Table result = table.Select(new List<string> { "Id", "Name" }, null);
+
+            result.CheckForTesting(new List<List<string>>
+            {
+                new List<string> { "1", "David" },
+                new List<string> { "2", "Anne" }
+            });
+        }
 
             table.DeleteIthRow(5);
             table.DeleteIthRow(-1);
+        [Fact]
+        public void TableDeleteRowsWhereConditionIsTrueIntTest()
+        {
+            List<ColumnDefinition> columns = new List<ColumnDefinition>()
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.Int, "Age")
+            };
+
+            Table table = new Table("Test", columns);
+
+            table.Insert(new List<string> { "10" });
+            table.Insert(new List<string> { "20" });
+            table.Insert(new List<string> { "30" });
 
             string esperado = "['Id','Name']{'1','Prueba'}";
             Assert.Equal(esperado, table.ToString());
+            Condition condition = new Condition("Age", ">", "18");
+
+            table.DeleteWhere(condition);
+
+            table.CheckForTesting(new List<List<string>>
+            {
+                new List<string> { "10" }
+            });
         }
 
         [Fact]
@@ -153,6 +202,47 @@ namespace OurTests
                 new ColumnDefinition(ColumnDefinition.DataType.String, "Id"),
                 new ColumnDefinition(ColumnDefinition.DataType.String, "Name")
             };
+            Table table = Table.CreateTestTable();
+
+            table.Insert(new List<string> { "1", "David" });
+            table.Insert(new List<string> { "2", "Anne" });
+            table.Insert(new List<string> { "3", "Danna" });
+
+            Condition condition = new Condition("Name", "=", "David");
+
+            table.DeleteWhere(condition);
+
+            table.CheckForTesting(new List<List<string>>
+            {
+                new List<string> { "2", "Anne" },
+                new List<string> { "3", "Danna" }
+            });
+        }
+
+        [Fact]
+        public void RowIsConditionTrueDoubleTest()
+        {
+            List<ColumnDefinition> columns = new List<ColumnDefinition>()
+        {
+            new ColumnDefinition(ColumnDefinition.DataType.Double, "Height")
+        };
+
+            Row row = new Row(columns, new List<string> { "1.70" });
+
+            Condition condition = new Condition("Height", ">", "1.60");
+
+            Assert.False(row.IsTrue(condition));
+        }
+
+        [Fact]
+        public void RowIsConditionTrueIntTest()
+        {
+
+        }
+
+        [Fact]
+        public void TableDeleteRowsWhereConditionIsTrueDoubleTest()
+        {
 
             table.AddRow(new Row(columns, new List<string> { "1", "Primera" }));
             table.AddRow(new Row(columns, new List<string> { "2", "Ultima" }));
