@@ -41,6 +41,7 @@ namespace DbManager
             {
                 int e1 = int.Parse(value);
                 int e2 = int.Parse(LiteralValue);
+<<<<<<< HEAD
                 if (Operator == LessThan)
                 {
                     return e1 < e2;
@@ -50,10 +51,22 @@ namespace DbManager
                     return e1 > e2;
                 }
                   if (Operator == Equal)
+=======
+                if (Operator == "<")
+                {
+                    return e1 < e2;
+                }
+                  if (Operator == ">")
+                {
+                    return e1 > e2;
+                }
+                  if (Operator == "=")
+>>>>>>> master
                 {
                     return e1 == e2;
                 }
                 
+<<<<<<< HEAD
                   if (Operator == LessOrEqual)
                 {
                     return e1 <= e2;
@@ -63,6 +76,17 @@ namespace DbManager
                     return e1 >= e2;
                 }
                   if (Operator == NotEqual)
+=======
+                  if (Operator == "<=")
+                {
+                    return e1 <= e2;
+                }
+                  if (Operator == ">=")
+                {
+                    return e1 >= e2;
+                }
+                  if (Operator == "!=")
+>>>>>>> master
                 {
                     return e1 != e2;
                 }
@@ -72,6 +96,7 @@ namespace DbManager
             if (type == ColumnDefinition.DataType.String)
             {
                 int aux = string.Compare(value, LiteralValue);
+<<<<<<< HEAD
                 if (Operator == LessThan)
                 {
                     return aux <0;
@@ -85,6 +110,21 @@ namespace DbManager
                     return aux ==0;
                 }
                 if (Operator == NotEqual)
+=======
+                if (Operator == "<")
+                {
+                    return aux <0;
+                }
+                if (Operator == ">")
+                {
+                    return aux > 0;
+                }
+                if (Operator == "=")
+                {
+                    return aux ==0;
+                }
+                if (Operator == "!=")
+>>>>>>> master
                 {
                     return aux !=0;
                 }
