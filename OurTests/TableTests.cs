@@ -249,7 +249,8 @@ namespace OurTests
 
             table.CheckForTesting(new List<List<string>>
             {
-                new List<string> { "2", "Anne" }
+                new List<string> { "2", "Anne" },
+                new List<string> { "3", "Danna" }
             });
         }
 
