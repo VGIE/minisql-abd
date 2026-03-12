@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
-using DbManager.Security;
 using DbManager;
 
 namespace SecurityParsingTests
@@ -15,9 +10,13 @@ namespace SecurityParsingTests
         public void Correct()
         {
             DeleteUser query = MiniSQLParser.Parse("DELETE USER user") as DeleteUser;
+
+            Assert.NotNull(query);
             Assert.Equal("user", query.Username);
 
             query = MiniSQLParser.Parse("DELETE USER OtherUser") as DeleteUser;
+
+            Assert.NotNull(query);
             Assert.Equal("OtherUser", query.Username);
         }
 
@@ -25,10 +24,28 @@ namespace SecurityParsingTests
         public void CorrectWithSpaces()
         {
             DeleteUser query = MiniSQLParser.Parse("DELETE     USER      USER") as DeleteUser;
+
+            Assert.NotNull(query);
             Assert.Equal("USER", query.Username);
 
             query = MiniSQLParser.Parse("DELETE USER    OtherUser") as DeleteUser;
+
+            Assert.NotNull(query);
             Assert.Equal("OtherUser", query.Username);
+        }
+
+        [Fact]
+        public void CorrectWithSemicolonAndWithoutSemicolon()
+        {
+            DeleteUser query = MiniSQLParser.Parse("DELETE USER user") as DeleteUser;
+
+            Assert.NotNull(query);
+            Assert.Equal("user", query.Username);
+
+            query = MiniSQLParser.Parse("DELETE USER user;") as DeleteUser;
+
+            Assert.NotNull(query);
+            Assert.Equal("user", query.Username);
         }
 
         [Fact]
@@ -53,12 +70,15 @@ namespace SecurityParsingTests
             query = MiniSQLParser.Parse("DELETE USER User 1") as DeleteUser;
             Assert.Null(query);
 
+            query = MiniSQLParser.Parse("DELETE USER 1User") as DeleteUser;
+            Assert.Null(query);
+
             query = MiniSQLParser.Parse("DELETE USER User") as DeleteUser;
             Assert.NotNull(query);
         }
 
         [Fact]
-        public void IncorrectWithoutProfile()
+        public void IncorrectWithoutUsername()
         {
             DeleteUser query = MiniSQLParser.Parse("DELETE USER") as DeleteUser;
             Assert.Null(query);
@@ -68,6 +88,22 @@ namespace SecurityParsingTests
 
             query = MiniSQLParser.Parse("DELETE USER User") as DeleteUser;
             Assert.NotNull(query);
+        }
+
+        [Fact]
+        public void IncorrectWithTooManyWords()
+        {
+            DeleteUser query = MiniSQLParser.Parse("DELETE USER User Extra") as DeleteUser;
+
+            Assert.Null(query);
+        }
+
+        [Fact]
+        public void IncorrectWithoutUserKeyword()
+        {
+            DeleteUser query = MiniSQLParser.Parse("DELETE User") as DeleteUser;
+
+            Assert.Null(query);
         }
     }
 }
