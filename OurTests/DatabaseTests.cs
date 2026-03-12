@@ -1,23 +1,24 @@
-using System.ComponentModel.DataAnnotations;
 using DbManager;
+using DbManager.Parser;
+using System.ComponentModel.DataAnnotations;
 
 namespace OurTests
 {
     public class DatabaseTests
     {
         //TODO DEADLINE 1B : Create your own tests for Database
-        /*
+        
         [Fact]
         
         public void CreateTable_ValidName_True()
         {
-            Database db = new DataBase("admin", "password123");
+            Database db = new Database("Besma","password123");
             List <ColumnDefinition> columns = new List<ColumnDefinition>
             {
-                new ColumnDefinition("id", DataType.Integer);
-                new ColumnDefinition("name", DataType.String);
+                new ColumnDefinition(ColumnDefinition.DataType.String, "id"),
+                new ColumnDefinition(ColumnDefinition.DataType.String, "name")
            
-            }
+            };
 
             bool result = db.CreateTable("Users",columns);
 
@@ -28,14 +29,58 @@ namespace OurTests
         [Fact]
         public void CreateTable_DuplicateName_False()
         {
-            Database db = new Database("admin", "password123");
+            Database db = new Database("Besma", "password123");
             List<ColumnDefinition> columns = new List<ColumnDefinition>
             {
-                new ColumnDefinition("id", DataType.Integer);
-            }
+                new ColumnDefinition(ColumnDefinition.DataType.Int, "id"),
+            };
             db.CreateTable("Users",columns);
-            bool result =
-        }*/
+            bool result = db.CreateTable("Users", columns);
+
+            Assert.False(result);
+            Assert.Equal(Constants.TableAlreadyExistsError, db.LastErrorMessage);
+        }
+        [Fact]
+        public void AddTable_True()
+        {
+            Database db = new Database("Besma", "password123");
+            Table table = Table.CreateTestTable();
+
+            bool result = db.AddTable(table);
+
+            Assert.True(result);
+            Assert.NotNull(db.TableByName(Table.TestTableName));
+        }
+
+        [Fact]
+        public void TableByName_ReturnsTable()
+        {
+            Database db = new Database("Besma", "password123");
+            db.AddTable(Table.CreateTestTable());
+            Table result = db.TableByName(Table.TestTableName);
+
+            Assert.NotNull(result);
+            Assert.Equal(Table.TestTableName, result.Name);
+        }
+
+        [Fact]
+        public void TableByName_ReturnsNull()
+        {
+            Database db = new Database("Besma", "password123");
+
+            Table result = db.TableByName("Does not Exist");
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void DataBaseTest()
+        {
+            Database db = new Database("Besma", "password123");
+            Assert.NotNull(db.SecurityManager);
+            Assert.Null(db.TableByName("random"));
+        }
+
+
         [Fact]
         public void InsertTest()
         {
@@ -61,6 +106,7 @@ namespace OurTests
             Assert.False(result);
             Assert.Equal(Constants.TableDoesNotExistError, database.LastErrorMessage);
         }
+
         [Fact]
         public void InsertWrongTest()
         {
@@ -113,5 +159,54 @@ namespace OurTests
         }
 
 
+
+        [Fact]
+        public void DeleteWhereTest()
+        {
+            Database database = Database.CreateTestDatabase();
+
+            Condition condition = new Condition("Id", "=", "1");
+
+            bool result = database.DeleteWhere("TestTable", condition);
+
+            Assert.True(result);
+            Assert.Equal(Constants.DeleteSuccess, database.LastErrorMessage);
+        }
+
+        [Fact]
+        public void UpdateTest()
+        {
+            Database database = Database.CreateTestDatabase();
+
+            List<SetValue> setValues = new List<SetValue>()
+            {
+                new SetValue("Name", "David")
+            };
+
+            Condition condition = new Condition("Id", "=", "1");
+
+            bool result = database.Update("TestTable", setValues, condition);
+
+            Assert.True(result);
+            Assert.Equal(Constants.UpdateSuccess, database.LastErrorMessage);
+        }
+
+        [Fact]
+        public void UpdateErrorsTest()
+        {
+            Database database = Database.CreateTestDatabase();
+
+            List<SetValue> setValues = new List<SetValue>()
+            {
+                new SetValue("FakeColumn", "David")
+            };
+
+            Condition condition = new Condition("Id", "=", "1");
+
+            bool result = database.Update("TestTable", setValues, condition);
+
+            Assert.False(result);
+            Assert.Equal(Constants.ColumnDoesNotExistError, database.LastErrorMessage);
+        }
     }
 }
