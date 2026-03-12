@@ -6,8 +6,14 @@ using DbManager;
 
 namespace DbManager
 {
-    public class Condition
+     public class Condition
     {
+        public const string LessThan = "<";
+        public const string GreaterThan = ">";
+        public const string Equal = "=";
+        public const string LessOrEqual = "<=";
+        public const string GreaterOrEqual = ">=";
+        public const string NotEqual = "!=";
         public string ColumnName { get; private set; }
         public string Operator { get; private set; }
         public string LiteralValue { get; private set; }
@@ -35,28 +41,28 @@ namespace DbManager
             {
                 int e1 = int.Parse(value);
                 int e2 = int.Parse(LiteralValue);
-                if (Operator == "<")
+                if (Operator == LessThan)
                 {
                     return e1 < e2;
                 }
-                  if (Operator == ">")
+                  if (Operator == GreaterThan)
                 {
                     return e1 > e2;
                 }
-                  if (Operator == "=")
+                  if (Operator == Equal)
                 {
                     return e1 == e2;
                 }
                 
-                  if (Operator == "<=")
+                  if (Operator == LessOrEqual)
                 {
                     return e1 <= e2;
                 }
-                  if (Operator == ">=")
+                  if (Operator == GreaterOrEqual)
                 {
                     return e1 >= e2;
                 }
-                  if (Operator == "!=")
+                  if (Operator == NotEqual)
                 {
                     return e1 != e2;
                 }
@@ -66,19 +72,19 @@ namespace DbManager
             if (type == ColumnDefinition.DataType.String)
             {
                 int aux = string.Compare(value, LiteralValue);
-                if (Operator == "<")
+                if (Operator == LessThan)
                 {
                     return aux <0;
                 }
-                if (Operator == ">")
+                if (Operator == GreaterThan)
                 {
                     return aux > 0;
                 }
-                if (Operator == "=")
+                if (Operator == Equal)
                 {
                     return aux ==0;
                 }
-                if (Operator == "!=")
+                if (Operator == NotEqual)
                 {
                     return aux !=0;
                 }
