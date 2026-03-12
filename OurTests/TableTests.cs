@@ -308,11 +308,30 @@ namespace OurTests
             });
         }
 
-        
+        [Fact]
+        public void TableUpdateRowsWhereConditionIsTrueStringTest()
+        {
+            Table table = Table.CreateTestTable();
 
+            table.Insert(new List<string> { "1", "David" });
+            table.Insert(new List<string> { "2", "Anne" });
+            table.Insert(new List<string> { "3", "Danna" });
 
+            List<SetValue> updates = new List<SetValue>()
+            {
+                new SetValue("Name", "Besma")
+            };
 
+            Condition condition = new Condition("Name", "=", "David");
 
+            table.Update(updates, condition);
 
+            table.CheckForTesting(new List<List<string>>
+            {
+                new List<string> { "1", "Besma" },
+                new List<string> { "2", "Anne" },
+                new List<string> { "3", "Danna" }
+            });
+        }
     }
 }
