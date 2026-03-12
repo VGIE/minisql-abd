@@ -1,6 +1,7 @@
+using DbManager;
+using DbManager.Parser;
 using System.Collections.Generic;
 using Xunit;
-using DbManager;
 
 namespace OurTests
 {
@@ -219,6 +220,62 @@ namespace OurTests
 
             Assert.False(row.IsTrue(condition));
         }
+
+        //debajo es nuevo
+
+        [Fact]
+        public void RowIsConditionTrueStringTest()
+        {
+            List<ColumnDefinition> columns = new List<ColumnDefinition>()
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.String, "Name")
+            };
+
+            Row row = new Row(columns, new List<string> { "David" });
+
+            Condition condition = new Condition("Name", "=", "David");
+
+            Assert.True(row.IsTrue(condition));
+        }
+
+        [Fact]
+        public void TableDeleteRowsWhereConditionIsTrueStringTest()
+        {
+            Table table = Table.CreateTestTable();
+
+            table.Insert(new List<string> { "1", "David" });
+            table.Insert(new List<string> { "2", "Anne" });
+            table.Insert(new List<string> { "3", "Danna" });
+
+            Condition condition = new Condition("Name", "=", "David");
+
+            table.DeleteWhere(condition);
+
+            table.CheckForTesting(new List<List<string>>
+            {
+                new List<string> { "2", "Anne" }
+            });
+        }
+
+        [Fact]
+        public void RowIsConditionTrueIntTest()
+        {
+            List<ColumnDefinition> columns = new List<ColumnDefinition>()
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.Int, "Age")
+            };
+
+            Row row = new Row(columns, new List<string> { "30" });
+
+            Condition condition = new Condition("Age", ">", "20");
+
+            Assert.True(row.IsTrue(condition));
+        }
+
+        
+
+
+
 
     }
 }
