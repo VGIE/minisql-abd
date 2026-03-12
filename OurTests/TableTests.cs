@@ -309,7 +309,7 @@ namespace OurTests
         }
 
         [Fact]
-        public void TableUpdateRowsWhereConditionIsTrueStringTest()
+        public void TableUpdateRowsWhereConditionIsTrueTest()
         {
             Table table = Table.CreateTestTable();
 
