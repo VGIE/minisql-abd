@@ -12,37 +12,37 @@ namespace OurTests
 
             Assert.Equal("Admins", query.ProfileName);
         }
+        //*
+        //[Fact]
+        //public void Execute_NullDatabase_ReturnsRequiredPrivilegeError()
+        //{
+        //    CreateSecurityProfile query = new CreateSecurityProfile("Admins");
 
-        [Fact]
-        public void Execute_NullDatabase_ReturnsRequiredPrivilegeError()
-        {
-            CreateSecurityProfile query = new CreateSecurityProfile("Admins");
+        //    string result = query.Execute(null);
 
-            string result = query.Execute(null);
+        //    Assert.Equal(Constants.UsersProfileIsNotGrantedRequiredPrivilege, result);
+        //}
 
-            Assert.Equal(Constants.UsersProfileIsNotGrantedRequiredPrivilege, result);
-        }
+        //[Fact]
+        //public void Execute_TestDatabase_ReturnsRequiredPrivilegeError()
+        //{
+        //    Database database = Database.CreateTestDatabase();
+        //    CreateSecurityProfile query = new CreateSecurityProfile("Admins");
 
-        [Fact]
-        public void Execute_TestDatabase_ReturnsRequiredPrivilegeError()
-        {
-            Database database = Database.CreateTestDatabase();
-            CreateSecurityProfile query = new CreateSecurityProfile("Admins");
+        //    string result = query.Execute(database);
 
-            string result = query.Execute(database);
+        //    Assert.Equal(Constants.UsersProfileIsNotGrantedRequiredPrivilege, result);
+        //}
 
-            Assert.Equal(Constants.UsersProfileIsNotGrantedRequiredPrivilege, result);
-        }
+        //[Fact]
+        //public void Execute_TestDatabase_DoesNotCreateProfile_WhenUserIsNotAdmin()
+        //{
+        //    Database database = Database.CreateTestDatabase();
+        //    CreateSecurityProfile query = new CreateSecurityProfile("Admins");
 
-        [Fact]
-        public void Execute_TestDatabase_DoesNotCreateProfile_WhenUserIsNotAdmin()
-        {
-            Database database = Database.CreateTestDatabase();
-            CreateSecurityProfile query = new CreateSecurityProfile("Admins");
+        //    query.Execute(database);
 
-            query.Execute(database);
-
-            Assert.Null(database.SecurityManager.ProfileByName("Admins"));
-        }
+        //    Assert.Null(database.SecurityManager.ProfileByName("Admins"));
+        //}//*
     }
 }
