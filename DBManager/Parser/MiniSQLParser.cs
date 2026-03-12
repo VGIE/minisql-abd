@@ -6,52 +6,49 @@ using System.Text.RegularExpressions;
 namespace DbManager
 {
     public class MiniSQLParser
+
     {
+        private const string Asterisk = "*";
+        private const string StringType = "STRING";
+        private const string IntType = "INT";
+        private const string DoubleType = "DOUBLE";
         public static MiniSqlQuery Parse(string miniSQLQuery)
         {
             if (string.IsNullOrWhiteSpace(miniSQLQuery))
                 return null;
 
-            // -----------------------
-            // DEADLINE 2 - Core SQL
-            // -----------------------
 
-            // SELECT col1,col2 FROM TableName [WHERE col OP value] [;]
             const string selectPattern =
                 @"^\s*SELECT\s+(?<cols>\*|[A-Za-z][A-Za-z0-9_]*(\s*,\s*[A-Za-z][A-Za-z0-9_]*)*)\s+" +
                 @"FROM\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s*" +
                 @"(?:(?:WHERE\s+(?<wcol>[A-Za-z][A-Za-z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|[^;\s]+)\s*))?" +
                 @";?\s*$";
 
-            // INSERT INTO TableName VALUES (v1,v2,...) [;]
+           
             const string insertPattern =
                 @"^\s*INSERT\s+INTO\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s+" +
                 @"VALUES\s*\(\s*(?<vals>.*)\s*\)\s*;?\s*$";
 
-            // DROP TABLE TableName [;]
+          
             const string dropTablePattern =
                 @"^\s*DROP\s+TABLE\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s*;?\s*$";
 
-            // CREATE TABLE TableName (Type Col, Type Col, ...) [;]
-            // Types: STRING | INT | DOUBLE  (senin ColumnDefinition.DataType enum’una mapliyoruz)
             const string createTablePattern =
                 @"^\s*CREATE\s+TABLE\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s*" +
                 @"\(\s*(?<cols>.+?)\s*\)\s*;?\s*$";
 
-            // UPDATE TableName SET col=val, col=val WHERE col OP val [;]
+        
             const string updateTablePattern =
                 @"^\s*UPDATE\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s+" +
                 @"SET\s+(?<set>.+?)\s+" +
                 @"WHERE\s+(?<wcol>[A-Za-z][A-Za-z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|[^;\s]+)\s*;?\s*$";
 
-            // DELETE FROM TableName WHERE col OP val [;]
+
             const string deletePattern =
                 @"^\s*DELETE\s+FROM\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s+" +
                 @"WHERE\s+(?<wcol>[A-Za-z][A-Za-z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|[^;\s]+)\s*;?\s*$";
 
-            // -----------------------
-            // DEADLINE 4 - Security (CASE-SENSITIVE)
-            // -----------------------
+
             const string createSecurityProfilePattern =
                 @"^\s*CREATE\s+SECURITY\s+PROFILE\s+(?<profile>[A-Za-z][A-Za-z0-9_]*)\s*;?\s*$";
 
@@ -64,17 +61,15 @@ namespace DbManager
             const string revokePattern =
                 @"^\s*REVOKE\s+(?<privilege>DELETE|INSERT|SELECT|UPDATE)\s+ON\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s+TO\s+(?<profile>[A-Za-z][A-Za-z0-9]*)\s*;?\s*$";
 
-            // AddUser: ADD USER (username,password,profile)  -> '_' yasak (senin HEAD’teki gibi)
+
             const string addUserPattern =
                 @"^\s*ADD\s+USER\s*\(\s*(?<username>[A-Za-z][A-Za-z0-9]*)\s*,\s*(?<password>[^,\)\s]+)\s*,\s*(?<profile>[A-Za-z][A-Za-z0-9]*)\s*\)\s*;?\s*$";
 
-            // DeleteUser: DELETE USER username  -> '_' yasak
+
             const string deleteUserPattern =
                 @"^\s*DELETE\s+USER\s+(?<username>[A-Za-z][A-Za-z0-9]*)\s*;?\s*$";
 
-            // =====================================================
-            // 1) SECURITY QUERIES (önce kontrol etmek daha iyi)
-            // =====================================================
+
             var mCreate = Regex.Match(miniSQLQuery, createSecurityProfilePattern);
             if (mCreate.Success)
                 return new CreateSecurityProfile(mCreate.Groups["profile"].Value);
@@ -111,11 +106,7 @@ namespace DbManager
             if (mDeleteUser.Success)
                 return new DeleteUser(mDeleteUser.Groups["username"].Value);
 
-            // =====================================================
-            // 2) CORE SQL QUERIES
-            // =====================================================
 
-            // SELECT
             var mSelect = Regex.Match(miniSQLQuery, selectPattern);
             if (mSelect.Success)
             {
@@ -123,9 +114,9 @@ namespace DbManager
 
                 List<string> columns;
                 string colsText = mSelect.Groups["cols"].Value.Trim();
-                if (colsText == "*")
+                if (colsText == Asterisk)
                 {
-                    // Projenizde "*" desteklenmiyorsa, burayý null döndürebilirsin
+                    
                     columns = new List<string> { "*" };
                 }
                 else
@@ -146,7 +137,7 @@ namespace DbManager
                 return new Select(table, columns, condition);
             }
 
-            // INSERT
+        
             var mInsert = Regex.Match(miniSQLQuery, insertPattern);
             if (mInsert.Success)
             {
@@ -155,14 +146,14 @@ namespace DbManager
                 return new Insert(table, values);
             }
 
-            // DROP TABLE
+        
             var mDropTable = Regex.Match(miniSQLQuery, dropTablePattern);
             if (mDropTable.Success)
             {
                 return new DropTable(mDropTable.Groups["table"].Value);
             }
 
-            // CREATE TABLE
+           
             var mCreateTable = Regex.Match(miniSQLQuery, createTablePattern);
             if (mCreateTable.Success)
             {
@@ -176,7 +167,7 @@ namespace DbManager
                 return new CreateTable(table, columns);
             }
 
-            // UPDATE
+          
             var mUpdate = Regex.Match(miniSQLQuery, updateTablePattern);
             if (mUpdate.Success)
             {
@@ -196,7 +187,7 @@ namespace DbManager
                 return new Update(table, setValues, condition);
             }
 
-            // DELETE
+           
             var mDelete = Regex.Match(miniSQLQuery, deletePattern);
             if (mDelete.Success)
             {
@@ -211,13 +202,10 @@ namespace DbManager
                 return new Delete(table, condition);
             }
 
-            // Syntax error
+       
             return null;
         }
 
-        // -----------------------
-        // Helpers
-        // -----------------------
 
         static List<string> CommaSeparatedNames(string text)
         {
@@ -237,15 +225,15 @@ namespace DbManager
             return result;
         }
 
-        // INSERT VALUES için: virgülle ayrýlmýþ, '...' destekli basit parser
+
         static List<string> CommaSeparatedValues(string text)
         {
             List<string> values = new List<string>();
             if (text == null) return values;
 
-            // Basit: '...' içindeyken virgül bölmesin
+   
             bool inQuotes = false;
-            var current = new System.Text.StringBuilder();
+            string current = "";
 
             for (int i = 0; i < text.Length; i++)
             {
@@ -254,22 +242,22 @@ namespace DbManager
                 if (ch == '\'')
                 {
                     inQuotes = !inQuotes;
-                    current.Append(ch);
+                    current += ch;
                     continue;
                 }
 
                 if (ch == ',' && !inQuotes)
                 {
-                    values.Add(Unquote(current.ToString().Trim()));
-                    current.Clear();
+                    values.Add(Unquote(current.Trim()));
+                    current = "";
                     continue;
                 }
 
-                current.Append(ch);
+                current+=ch;
             }
 
             if (current.Length > 0)
-                values.Add(Unquote(current.ToString().Trim()));
+                values.Add(Unquote(current.Trim()));
 
             return values;
         }
@@ -289,7 +277,7 @@ namespace DbManager
                 return null;
 
             List<SetValue> list = new List<SetValue>();
-            List<string> pairs = CommaSeparatedValues(setRaw); // burada her parça "col=val" gibi gelecek
+            List<string> pairs = CommaSeparatedValues(setRaw); 
 
             for (int i = 0; i < pairs.Count; i++)
             {
@@ -311,8 +299,6 @@ namespace DbManager
             if (string.IsNullOrWhiteSpace(colsRaw))
                 return null;
 
-            // örnek: "STRING Name, INT Age, DOUBLE Height"
-            // split virgül (quotes yok burada varsayýyoruz)
             string[] parts = colsRaw.Split(",", StringSplitOptions.RemoveEmptyEntries);
 
             List<ColumnDefinition> cols = new List<ColumnDefinition>();
@@ -332,9 +318,9 @@ namespace DbManager
                 string nameText = tokens[1].Trim();
 
                 ColumnDefinition.DataType dt;
-                if (typeText == "STRING") dt = ColumnDefinition.DataType.String;
-                else if (typeText == "INT") dt = ColumnDefinition.DataType.Int;
-                else if (typeText == "DOUBLE") dt = ColumnDefinition.DataType.Double;
+                if (typeText == StringType) dt = ColumnDefinition.DataType.String;
+                else if (typeText == IntType) dt = ColumnDefinition.DataType.Int;
+                else if (typeText == DoubleType) dt = ColumnDefinition.DataType.Double;
                 else return null;
 
                 cols.Add(new ColumnDefinition(dt, nameText));
