@@ -106,8 +106,7 @@ namespace OurTests
             Assert.False(result);
             Assert.Equal(Constants.TableDoesNotExistError, database.LastErrorMessage);
         }
-<<<<<<< HEAD
-=======
+
         [Fact]
         public void InsertWrongTest()
         {
@@ -160,7 +159,6 @@ namespace OurTests
         }
 
 
->>>>>>> master
 
         [Fact]
         public void DeleteWhereTest()

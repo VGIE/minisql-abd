@@ -164,9 +164,9 @@ namespace OurTests
         public void TableDeleteRowsWhereConditionIsTrueIntTest()
         {
             List<ColumnDefinition> columns = new List<ColumnDefinition>()
-            {
-                new ColumnDefinition(ColumnDefinition.DataType.Int, "Age")
-            };
+    {
+        new ColumnDefinition(ColumnDefinition.DataType.Int, "Age")
+    };
 
             Table table = new Table("Test", columns);
 
@@ -174,16 +174,14 @@ namespace OurTests
             table.Insert(new List<string> { "20" });
             table.Insert(new List<string> { "30" });
 
-            string esperado = "['Id','Name']{'1','Prueba'}";
-            Assert.Equal(esperado, table.ToString());
-            Condition condition = new Condition("Age", ">", "18");
+            Condition condition = new Condition("Age", ">", "15");
 
             table.DeleteWhere(condition);
 
             table.CheckForTesting(new List<List<string>>
-            {
-                new List<string> { "10" }
-            });
+    {
+        new List<string> { "10" }
+    });
         }
 
         [Fact]
