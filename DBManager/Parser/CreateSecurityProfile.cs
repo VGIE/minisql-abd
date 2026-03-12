@@ -10,27 +10,17 @@ namespace DbManager
 
         public CreateSecurityProfile(string profileName)
         {
-            //TODO DEADLINE 4: Initialize member variables
             ProfileName = profileName;
-            
         }
 
         public string Execute(Database database)
         {
-            //TODO DEADLINE 5: Run the query and return the appropriate message
-            //UsersProfileIsNotGrantedRequiredPrivilege, CreateSecurityProfileSuccess
-            if (database.SecurityManager.ProfileByName(this.ProfileName) != null)
-            {
-                return Constants.Error;
-            }
-            Profile newProfile = new Profile();
-            newProfile.Name = this.ProfileName;
-            database.SecurityManager.Profiles.Add(newProfile);
+           
+            if (database == null || !database.IsUserAdmin())
+                return Constants.UsersProfileIsNotGrantedRequiredPrivilege;
 
-            return Constants.CreateSecurityProfileSuccess;
-        
             
-            if(database.SecurityManager.ProfileByName(ProfileName) == null)
+            if (database.SecurityManager.ProfileByName(ProfileName) == null)
             {
                 database.SecurityManager.AddProfile(new Profile { Name = ProfileName });
             }
