@@ -221,8 +221,6 @@ namespace OurTests
             Assert.False(row.IsTrue(condition));
         }
 
-        //debajo es nuevo
-
         [Fact]
         public void RowIsConditionTrueStringTest()
         {
@@ -272,7 +270,47 @@ namespace OurTests
             Assert.True(row.IsTrue(condition));
         }
 
+        [Fact]
+        public void TableSelectWithoutConditionAndDisorderedColumnsTest()
+        {
+            Table table = Table.CreateTestTable();
+
+            table.Insert(new List<string> { "1", "David" });
+
+            Table result = table.Select(new List<string> { "Name", "Id" }, null);
+
+            result.CheckForTesting(new List<List<string>>
+            {
+                new List<string> { "David", "1" }
+            });
+        }
+
+        [Fact]
+        public void TableDeleteRowsWhereConditionIsTrueDoubleTest()
+        {
+            List<ColumnDefinition> columns = new List<ColumnDefinition>()
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.Double, "Height")
+            };
+
+            Table table = new Table("Test", columns);
+
+            table.Insert(new List<string> { "1.60" });
+            table.Insert(new List<string> { "1.80" });
+
+            Condition condition = new Condition("Height", ">", "1.70");
+
+            table.DeleteWhere(condition);
+
+            table.CheckForTesting(new List<List<string>>
+            {
+                new List<string> { "1.60" },
+                new List<string> { "1.80" }
+            });
+        }
+
         
+
 
 
 
