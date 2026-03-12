@@ -32,7 +32,7 @@ namespace DbManager.Parser
                 return database.LastErrorMessage;
             }
 
-            return null;
+            //return null;
             
         }
     }
