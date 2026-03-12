@@ -117,14 +117,17 @@ namespace DbManager
         {
             if (Values == null || Values.Count == 0)
                 return "";
+            string result = "";
 
-            List<string> encoded = new List<string>();
-            for (int i = 0; i < Values.Count; i++)
+            for (int i=0; i < Values.Count; i++)
             {
-                encoded.Add(Encode(Values[i]));
+                result += Encode(Values[i]);
+                if(i < Values.Count - 1)
+                {
+                    result += Delimiter;
+                }
             }
-
-            return string.Join(Delimiter, encoded);
+            return result;
         }
 
         public static Row Parse(List<ColumnDefinition> columns, string value)

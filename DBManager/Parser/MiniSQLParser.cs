@@ -6,7 +6,12 @@ using System.Text.RegularExpressions;
 namespace DbManager
 {
     public class MiniSQLParser
+
     {
+        private const string Asterisk = "*";
+        private const string StringType = "STRING";
+        private const string IntType = "INT";
+        private const string DoubleType = "DOUBLE";
         public static MiniSqlQuery Parse(string miniSQLQuery)
         {
             if (string.IsNullOrWhiteSpace(miniSQLQuery))
@@ -123,7 +128,7 @@ namespace DbManager
 
                 List<string> columns;
                 string colsText = mSelect.Groups["cols"].Value.Trim();
-                if (colsText == "*")
+                if (colsText == Asterisk)
                 {
                     // Projenizde "*" desteklenmiyorsa, burayý null döndürebilirsin
                     columns = new List<string> { "*" };
@@ -245,7 +250,7 @@ namespace DbManager
 
             // Basit: '...' içindeyken virgül bölmesin
             bool inQuotes = false;
-            var current = new System.Text.StringBuilder();
+            string current = "";
 
             for (int i = 0; i < text.Length; i++)
             {
@@ -254,22 +259,22 @@ namespace DbManager
                 if (ch == '\'')
                 {
                     inQuotes = !inQuotes;
-                    current.Append(ch);
+                    current += ch;
                     continue;
                 }
 
                 if (ch == ',' && !inQuotes)
                 {
-                    values.Add(Unquote(current.ToString().Trim()));
-                    current.Clear();
+                    values.Add(Unquote(current.Trim()));
+                    current = "";
                     continue;
                 }
 
-                current.Append(ch);
+                current+=ch;
             }
 
             if (current.Length > 0)
-                values.Add(Unquote(current.ToString().Trim()));
+                values.Add(Unquote(current.Trim()));
 
             return values;
         }
@@ -332,9 +337,9 @@ namespace DbManager
                 string nameText = tokens[1].Trim();
 
                 ColumnDefinition.DataType dt;
-                if (typeText == "STRING") dt = ColumnDefinition.DataType.String;
-                else if (typeText == "INT") dt = ColumnDefinition.DataType.Int;
-                else if (typeText == "DOUBLE") dt = ColumnDefinition.DataType.Double;
+                if (typeText == StringType) dt = ColumnDefinition.DataType.String;
+                else if (typeText == IntType) dt = ColumnDefinition.DataType.Int;
+                else if (typeText == DoubleType) dt = ColumnDefinition.DataType.Double;
                 else return null;
 
                 cols.Add(new ColumnDefinition(dt, nameText));
