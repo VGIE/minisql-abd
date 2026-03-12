@@ -66,6 +66,7 @@ namespace OurTests
 
             Assert.NotNull(result);
             Assert.Equal("Name", result.Name);
+            Assert.Null(table.ColumnByName(null));
         }
 
         [Fact]
@@ -73,9 +74,14 @@ namespace OurTests
         {
             Table table = Table.CreateTestTable();
 
-            int index = table.ColumnIndexByName("Id");
+            int indexId = table.ColumnIndexByName("Id");
+            int indexName = table.ColumnIndexByName("Name");
+            int indexFake = table.ColumnIndexByName("NonExistent");
 
-            Assert.Equal(0, index);
+
+            Assert.Equal(0, indexId);
+            Assert.Equal(1, indexName);
+            Assert.Equal(-1, indexFake);
         }
 
         [Fact]
@@ -98,6 +104,20 @@ namespace OurTests
         }
 
         [Fact]
+        public void ToStringTest2()
+        {
+            Table table = Table.CreateTestTable();
+
+            List<string> values = new List<string> { "1", "Anne"};
+
+            table.Insert(values);
+
+            string result = table.ToString();
+
+            Assert.Equal("['Id','Name']{'1','Anne'}", result);
+        }
+
+        [Fact]
         public void ToStringTest_EmptyTable()
         {
             Table table = Table.CreateTestTable();
@@ -108,18 +128,12 @@ namespace OurTests
         }
 
         [Fact]
-        public void DeleteIthRow_ShouldDeleteFirstCreatedRow()
+        public void Delete1stRow()
         {
             Table table = Table.CreateTestTable();
 
-            List<ColumnDefinition> columns = new List<ColumnDefinition>()
-            {
-                new ColumnDefinition(ColumnDefinition.DataType.String, "Id"),
-                new ColumnDefinition(ColumnDefinition.DataType.String, "Name")
-            };
-
-            table.AddRow(new Row(columns, new List<string> { "1", "A" }));
-            table.AddRow(new Row(columns, new List<string> { "2", "B" }));
+            table.Insert(new List<string> { "1", "A" });
+            table.Insert(new List<string> { "2", "B" });
 
             table.DeleteIthRow(0);
 
@@ -128,19 +142,33 @@ namespace OurTests
         }
 
         [Fact]
+        public void DeleteLastRow()
+        {
+            Table table = Table.CreateTestTable();
+            table.Insert(new List<string> { "0", "First" });
+            table.Insert(new List<string> { "1", "Last" });
+
+            table.DeleteIthRow(table.NumRows() - 1);
+
+            Assert.Equal(1, table.NumRows());
+            Assert.Equal("0", table.GetRow(0).Values[0]);
+        }
+
+        [Fact]
         public void DeleteIthRow_DeleteOutOfRangeRow()
         {
             Table table = Table.CreateTestTable();
-
-            table.Insert(new List<string> { "1", "Test" });
+            List<string> values = new List<string> { "1", "Test" };
+            table.Insert(values);
 
             table.DeleteIthRow(5);
             table.DeleteIthRow(-1);
 
-            table.CheckForTesting(new List<List<string>>
-            {
-                new List<string> { "1", "Test" }
-            });
+            Assert.Equal(1, table.NumRows());
+
+            Row resultRow = table.GetRow(0);
+            Assert.Equal("1", resultRow.Values[0]);
+            Assert.Equal("Test", resultRow.Values[1]);
         }
 
         [Fact]
@@ -164,9 +192,9 @@ namespace OurTests
         public void TableDeleteRowsWhereConditionIsTrueIntTest()
         {
             List<ColumnDefinition> columns = new List<ColumnDefinition>()
-    {
-        new ColumnDefinition(ColumnDefinition.DataType.Int, "Age")
-    };
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.Int, "Age")
+            };
 
             Table table = new Table("Test", columns);
 
@@ -179,30 +207,11 @@ namespace OurTests
             table.DeleteWhere(condition);
 
             table.CheckForTesting(new List<List<string>>
-    {
-        new List<string> { "10" }
-    });
-        }
-
-        [Fact]
-        public void DeleteIthRow_DeleteLastRow()
-        {
-            List<ColumnDefinition> columns = new List<ColumnDefinition>()
             {
-                new ColumnDefinition(ColumnDefinition.DataType.String, "Id"),
-                new ColumnDefinition(ColumnDefinition.DataType.String, "Name")
-            };
-
-            Table table = new Table("Test", columns);
-
-            table.AddRow(new Row(columns, new List<string> { "1", "Primera" }));
-            table.AddRow(new Row(columns, new List<string> { "2", "Ultima" }));
-
-            table.DeleteIthRow(1);
-
-            string esperado = "['Id','Name']{'1','Primera'}";
-            Assert.Equal(esperado, table.ToString());
+                new List<string> { "10" }
+            });
         }
+
 
         [Fact]
         public void RowIsConditionTrueDoubleTest()
