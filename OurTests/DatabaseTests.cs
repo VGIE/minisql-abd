@@ -161,7 +161,7 @@ namespace OurTests
 
 
         [Fact]
-        public void DeleteWhereTest()
+        public void DeleteWhere()
         {
             Database database = Database.CreateTestDatabase();
 
