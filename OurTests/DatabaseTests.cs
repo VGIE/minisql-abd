@@ -149,12 +149,12 @@ namespace OurTests
             Database database = Database.CreateTestDatabase();
             List<string> select = new List<string>()
             {
-                "Id"
+                "Name"
             };
             Table result = database.Select("TestTable", select, null);
             Assert.NotNull(result);
             Assert.Equal(1, result.NumColumns());
-            Assert.Equal("Id", result.GetColumn(0).Name);
+            Assert.Equal("Name", result.GetColumn(0).Name);
 
         }
 
@@ -165,7 +165,7 @@ namespace OurTests
         {
             Database database = Database.CreateTestDatabase();
 
-            Condition condition = new Condition("Id", "=", "1");
+            Condition condition = new Condition("Name", "=", "Danna");
 
             bool result = database.DeleteWhere("TestTable", condition);
 
@@ -183,7 +183,7 @@ namespace OurTests
                 new SetValue("Name", "David")
             };
 
-            Condition condition = new Condition("Id", "=", "1");
+            Condition condition = new Condition("Age", "=", "15");
 
             bool result = database.Update("TestTable", setValues, condition);
 
