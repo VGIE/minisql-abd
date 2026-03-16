@@ -33,16 +33,24 @@ namespace OurTests
 
         [Fact]
         public void MultipleInsert_ShouldStoreAllRows()
+
         {
-            Table table = Table.CreateTestTable();
+            List<ColumnDefinition> columns = new List<ColumnDefinition>()
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.String, "Name"),
+                new ColumnDefinition(ColumnDefinition.DataType.Double, "Height"),
+                new ColumnDefinition(ColumnDefinition.DataType.Int, "Age")
+            };
+            Table table = new Table("TestTable", columns);
+
 
             table.Insert(new List<string> { "John", "1.78","17" });
             table.Insert(new List<string> { "Jane", "1.55","27" });
 
             table.CheckForTesting(new List<List<string>>
             {
-                new List<string> { "1", "John" },
-                new List<string> { "2", "Jane" }
+                new List<string> { "John", "1.78","17" },
+                new List<string> { "Jane", "1.55", "27" }
             });
         }
 
