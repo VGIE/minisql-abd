@@ -342,5 +342,29 @@ namespace OurTests
                 new List<string> { "3", "Danna" }
             });
         }
+
+        [Fact]
+        public void TableGetRowTest()
+        {
+            Table table = Table.CreateTestTable();
+            List<ColumnDefinition> cols = new List<ColumnDefinition>()
+            {
+               new ColumnDefinition(ColumnDefinition.DataType.String, "Id"),
+               new ColumnDefinition(ColumnDefinition.DataType.String, "Name")
+            };
+
+            table.AddRow(new Row(cols, new List<string> { "1", "Rodolfo" }));
+            table.AddRow(new Row(cols, new List<string> { "2", "Pepe" }));
+
+            Row filaObtenida = table.GetRow(1); //debería devolver la fila con "Pepe" porque es la fila en el índice 1
+            Row filaInexistente = table.GetRow(99);
+            Row filaNegativa = table.GetRow(-5);
+
+            Assert.NotNull(filaObtenida);
+            Assert.Equal("Pepe", filaObtenida.GetValue("Name"));
+
+            Assert.Null(filaInexistente);
+            Assert.Null(filaNegativa);
+        }
     }
 }

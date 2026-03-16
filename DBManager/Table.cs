@@ -20,11 +20,16 @@ namespace DbManager
 
         public Row GetRow(int i)
         {
-            if (i >= 0 && i < Rows.Count)
+            if (i < 0 || i >= Rows.Count)
             {
-                return Rows[i];
+                return null;
             }
-            return null;
+
+            Row original = Rows[i];
+
+            if (original == null) return null;
+
+            return new Row(this.ColumnDefinitions, original.Values);
         }
 
         public void AddRow(Row row)
