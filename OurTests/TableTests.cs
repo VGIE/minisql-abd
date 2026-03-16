@@ -12,7 +12,7 @@ namespace OurTests
         {
             Table table = Table.CreateTestTable();
 
-            List<string> row = new List<string> { "1", "John" };
+            List<string> row = new List<string> { "Annita", "1.85","19" };
 
             bool result = table.Insert(row);
 
@@ -36,8 +36,8 @@ namespace OurTests
         {
             Table table = Table.CreateTestTable();
 
-            table.Insert(new List<string> { "1", "John" });
-            table.Insert(new List<string> { "2", "Jane" });
+            table.Insert(new List<string> { "John", "1.78","17" });
+            table.Insert(new List<string> { "Jane", "1.55","27" });
 
             table.CheckForTesting(new List<List<string>>
             {
