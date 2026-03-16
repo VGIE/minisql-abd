@@ -27,7 +27,7 @@ namespace DbManager
 
             if (success)
             {
-                return "InsertSuccess";
+                return Constants.InsertSuccess;
             }
             else
             {

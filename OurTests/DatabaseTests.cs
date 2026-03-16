@@ -87,7 +87,7 @@ namespace OurTests
             Database database = Database.CreateTestDatabase();
             List<string> newRow = new List<string>()
             {
-                "1","Danna"
+                "Danna", "1.56","18"
             };
             bool result = database.Insert("TestTable", newRow);
             Assert.True(result);
@@ -113,7 +113,7 @@ namespace OurTests
             Database database = Database.CreateTestDatabase();
             List<string> badRow = new List<string>()
             {
-                "1","Danna","Bad"
+                "1","Danna"
 
             };
             bool result = database.Insert("TestTable", badRow);
