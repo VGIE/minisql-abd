@@ -202,6 +202,12 @@ namespace OurTests
 
             Table result = table.Select(new List<string> { "Name", "Age" }, null);
 
+            Assert.NotNull(result);
+            Assert.Equal(2, result.NumColumns());
+            Assert.Equal("Name", result.GetColumn(0).Name);
+            Assert.Equal("Age", result.GetColumn(1).Name);
+            Assert.Equal(3, result.NumRows());
+
             result.CheckForTesting(new List<List<string>>
             {
                 new List<string> { "Rodolfo", "25" },
@@ -239,15 +245,15 @@ namespace OurTests
         public void RowIsConditionTrueDoubleTest()
         {
             List<ColumnDefinition> columns = new List<ColumnDefinition>()
-        {
-            new ColumnDefinition(ColumnDefinition.DataType.Double, "Height")
-        };
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.Double, "Height")
+            };
 
             Row row = new Row(columns, new List<string> { "1.70" });
 
             Condition condition = new Condition("Height", ">", "1.60");
 
-            Assert.False(row.IsTrue(condition));
+            Assert.True(row.IsTrue(condition));
         }
 
         [Fact]
@@ -308,6 +314,12 @@ namespace OurTests
 
             Table result = table.Select(new List<string> { "Age", "Name" }, null);
 
+            Assert.NotNull(result);
+            Assert.Equal(2, result.NumColumns());
+            Assert.Equal("Age", result.GetColumn(0).Name);
+            Assert.Equal("Name", result.GetColumn(1).Name);
+            Assert.Equal(3, result.NumRows());
+
             result.CheckForTesting(new List<List<string>>
             {
                 new List<string> { "25", "Rodolfo" },
@@ -335,8 +347,7 @@ namespace OurTests
 
             table.CheckForTesting(new List<List<string>>
             {
-                new List<string> { "1.60" },
-                new List<string> { "1.80" }
+                new List<string> { "1.60" }
             });
         }
 
@@ -345,9 +356,9 @@ namespace OurTests
         {
             Table table = Table.CreateTestTable();
 
-            table.Insert(new List<string> { "1", "David" });
-            table.Insert(new List<string> { "2", "Anne" });
-            table.Insert(new List<string> { "3", "Danna" });
+            table.Insert(new List<string> { "David", "1.80", "30" });
+            table.Insert(new List<string> { "Anne", "1.65", "28" });
+            table.Insert(new List<string> { "Danna", "1.70", "22" });
 
             List<SetValue> updates = new List<SetValue>()
             {
@@ -360,9 +371,12 @@ namespace OurTests
 
             table.CheckForTesting(new List<List<string>>
             {
-                new List<string> { "1", "Besma" },
-                new List<string> { "2", "Anne" },
-                new List<string> { "3", "Danna" }
+                new List<string> { "Rodolfo", "1.62", "25" },
+                new List<string> { "Maider", "1.67", "67" },
+                new List<string> { "Pepe", "1.55", "51" },
+                new List<string> { "Besma", "1.80", "30" },
+                new List<string> { "Anne", "1.65", "28" },
+                new List<string> { "Danna", "1.70", "22" }
             });
         }
     }
