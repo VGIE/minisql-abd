@@ -224,6 +224,52 @@ namespace OurTests
         }
 
         [Fact]
+        public void Parse_DeleteWithExtraSpaces_ReturnsCorrectDeleteObject()
+        {
+            string query = "  DELETE   FROM    Students   WHERE  Age  >  18  ;  ";
+            MiniSqlQuery result = MiniSQLParser.Parse(query);
+
+            Assert.NotNull(result);
+            Delete delete = Assert.IsType<Delete>(result);
+
+            Assert.Equal("Students", delete.Table);
+            Assert.Equal("Age", delete.Where.ColumnName);
+            Assert.Equal(">", delete.Where.Operator);
+            Assert.Equal("18", delete.Where.LiteralValue);
+        }
+
+        [Fact]
+        public void Parse_DeleteWithCase_ReturnsCorrectDeleteObject()
+        {
+            string query = "DELETE FROM Students WHERE Name = 'ANNE';";
+            MiniSqlQuery result = MiniSQLParser.Parse(query);
+
+            Assert.NotNull(result);
+            Delete delete = Assert.IsType<Delete>(result);
+
+            Assert.Equal("Students", delete.Table);
+            Assert.Equal("Name", delete.Where.ColumnName);
+
+            Assert.Equal("ANNE", delete.Where.LiteralValue.Replace("'", ""));
+        }
+
+        [Fact]
+        public void Parse_DeleteSimpleStringCondition_ReturnsDeleteObject()
+        {
+            string query = "DELETE FROM Employees WHERE City = 'Vitoria';";
+            MiniSqlQuery result = MiniSQLParser.Parse(query);
+
+            Assert.NotNull(result);
+            Delete delete = Assert.IsType<Delete>(result);
+
+            Assert.Equal("Employees", delete.Table);
+            Assert.Equal("City", delete.Where.ColumnName);
+            Assert.Equal("=", delete.Where.Operator);
+
+            Assert.Equal("Vitoria", delete.Where.LiteralValue);
+        }
+
+        [Fact]
         public void Parse_CreateSecurityProfile_ReturnsCreateSecurityProfileObject()
         {
             MiniSqlQuery result = MiniSQLParser.Parse("CREATE SECURITY PROFILE Admins;");
