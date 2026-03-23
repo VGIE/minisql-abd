@@ -1,6 +1,7 @@
 using DbManager.Parser;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace DbManager
 {
@@ -66,30 +67,63 @@ namespace DbManager
 
         public bool IsTrue(Condition condition)
         {
-            if (condition == null || string.IsNullOrWhiteSpace(condition.ColumnName))
+            if (condition == null)
                 return false;
 
-            int index = -1;
-            ColumnDefinition column = null;
-
+            int colIndex = -1;
             for (int i = 0; i < ColumnDefinitions.Count; i++)
             {
-                if (ColumnDefinitions[i] != null && ColumnDefinitions[i].Name == condition.ColumnName)
+                if (ColumnDefinitions[i].Name == condition.ColumnName)
                 {
-                    index = i;
-                    column = ColumnDefinitions[i];
+                    colIndex = i;
                     break;
                 }
             }
 
-            if (index < 0 || column == null)
+            if (colIndex < 0 || colIndex >= Values.Count)
                 return false;
 
-            if (Values == null || index >= Values.Count)
-                return false;
+            string value = Values[colIndex];
+            ColumnDefinition.DataType type = ColumnDefinitions[colIndex].Type;
 
-            string leftValue = Values[index];
-            return condition.IsTrue(leftValue, column.Type);
+            if (type == ColumnDefinition.DataType.Double)
+            {
+                double vDouble = double.Parse(value);
+                double cDouble = double.Parse(condition.LiteralValue);
+
+                if (condition.Operator == Condition.GreaterThan) return vDouble > cDouble;
+                else if (condition.Operator == Condition.LessThan) return vDouble < cDouble;
+                else if (condition.Operator == Condition.Equal) return vDouble == cDouble;
+                else if (condition.Operator == Condition.GreaterOrEqual) return vDouble >= cDouble;
+                else if (condition.Operator == Condition.LessOrEqual) return vDouble <= cDouble;
+                else if (condition.Operator == Condition.NotEqual) return vDouble != cDouble;
+                else return false;
+            }
+
+            else if (type == ColumnDefinition.DataType.Int)
+            {
+                int vInt = int.Parse(value);
+                int cInt = int.Parse(condition.LiteralValue);
+
+                if (condition.Operator == Condition.GreaterThan) return vInt > cInt;
+                else if (condition.Operator == Condition.LessThan) return vInt < cInt;
+                else if (condition.Operator == Condition.Equal) return vInt == cInt;
+                else if (condition.Operator == Condition.GreaterOrEqual) return vInt >= cInt;
+                else if (condition.Operator == Condition.LessOrEqual) return vInt <= cInt;
+                else if (condition.Operator == Condition.NotEqual) return vInt != cInt;
+                else return false;
+            }
+
+            else
+            {
+                string condValue = condition.LiteralValue;
+
+                if (condition.Operator == Condition.Equal) return value == condValue;
+                else if (condition.Operator == Condition.NotEqual) return value != condValue;
+                else if (condition.Operator == Condition.LessThan) return string.Compare(value, condValue) < 0;
+                else if (condition.Operator == Condition.GreaterThan) return string.Compare(value, condValue) > 0;
+                else return false;
+            }
         }
 
         private const string Delimiter = ":";
