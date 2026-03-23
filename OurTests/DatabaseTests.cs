@@ -208,5 +208,48 @@ namespace OurTests
             Assert.False(result);
             Assert.Equal(Constants.ColumnDoesNotExistError, database.LastErrorMessage);
         }
+
+        [Fact]
+        public void TestSaveAndLoad()
+        {
+            Database database = Database.CreateTestDatabase();
+            string databaseName = "test1";
+
+            bool saved = database.Save(databaseName);
+            Assert.True(saved);
+
+            Database loadedData = Database.Load(databaseName, Database.AdminUsername, Database.AdminPassword);
+            Assert.NotNull(loadedData);
+
+            bool result = sameDB(database, loadedData);
+            Assert.True(result);
+        }
+
+        public bool sameDB(Database original, Database loaded)
+        {
+            foreach (Table tableO in original.Tables)
+            {
+                Table tableL = loaded.TableByName(tableO.Name);
+
+                if (tableL == null)
+                    return false;
+
+                if (tableO.Name != tableL.Name || tableO.NumColumns() != tableL.NumColumns() || tableO.NumRows() != tableL.NumRows())
+                    return false;
+
+                for (int i = 0; i < tableO.NumRows(); i++)
+                {
+                    Row rowO = tableO.GetRow(i);
+                    Row rowL = tableL.GetRow(i);
+
+                    for (int j = 0; j < tableO.NumColumns(); j++)
+                    {
+                        if (rowO.Values[j] != rowL.Values[j])
+                            return false;
+                    }
+                }
+            }
+            return true;
+        }
     }
 }

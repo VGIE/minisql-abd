@@ -14,7 +14,7 @@ namespace DbManager
 {
     public class Database
     {
-        private List<Table> Tables = new List<Table>();
+        public List<Table> Tables = new List<Table>();
         private string m_username;
 
         public string LastErrorMessage { get; private set; }
@@ -216,92 +216,113 @@ namespace DbManager
 
         public bool Save(string databaseName)
         {
-            //DEADLINE 1.C + DEADLINE 5
+            //DEADLINE 1.C: Save this database to disk with the given name
+            //If everything goes ok, return true, false otherwise.
+            //DEADLINE 5: Save the SecurityManager so that it can be loaded with the database in Load()
+
             try
             {
-                
-                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                string path = Path.Combine(Directory.GetCurrentDirectory(), databaseName);
 
-                string dbPath = Path.Combine(baseDir, $"{databaseName}.db");
-                string secPath = Path.Combine(baseDir, $"{databaseName}.sec");
-
-#pragma warning disable SYSLIB0011
-                BinaryFormatter formatter = new BinaryFormatter();
-
-              
-                using (FileStream fs = new FileStream(dbPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                if (Directory.Exists(path))
                 {
-                    formatter.Serialize(fs, Tables);
+                    Directory.Delete(path, true);
                 }
 
-                
-                using (FileStream fs = new FileStream(secPath, FileMode.Create, FileAccess.Write, FileShare.None))
-                {
-                    formatter.Serialize(fs, SecurityManager);
-                }
-#pragma warning restore SYSLIB0011
+                Directory.CreateDirectory(path);
 
+                foreach (Table table in Tables)
+                {
+                    string tablePath = Path.Combine(path, table.Name + ".txt");
+
+                    using (TextWriter tr = File.CreateText(tablePath))
+                    {
+                        for (int i = 0; i < table.NumColumns(); i++)
+                        {
+                            tr.WriteLine(table.GetColumn(i).AsText());
+                        }
+
+                        tr.WriteLine("");
+
+                        for (int i = 0; i < table.NumRows(); i++)
+                        {
+                            tr.WriteLine(table.GetRow(i).AsText());
+                        }
+                    }
+                }
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                LastErrorMessage = Constants.Error + ex.Message;
                 return false;
             }
+
         }
 
         public static Database Load(string databaseName, string username, string password)
         {
-            
+            //DEADLINE 1.C: Load the (previously saved) database of name databaseName
+            //If everything goes ok, return the loaded database (a new instance), null otherwise.
+            //DEADLINE 5: When the Database object is created, set the username (create a new method if you must)
+            //After loading the database, load the SecurityManager and check the password is correct. If it's not, return null. If it is return the database
+
+            Database database = new Database();
             try
             {
-                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                string path = Path.Combine(Directory.GetCurrentDirectory(), databaseName);
 
-                string dbPath = Path.Combine(baseDir, $"{databaseName}.db");
-                string secPath = Path.Combine(baseDir, $"{databaseName}.sec");
-
-                if (!File.Exists(dbPath) || !File.Exists(secPath))
-                    return null;
-
-                List<Table> loadedTables;
-                Manager loadedSecurity;
-
-#pragma warning disable SYSLIB0011
-                BinaryFormatter formatter = new BinaryFormatter();
-
-                
-                using (FileStream fs = new FileStream(dbPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                if (!Directory.Exists(path))
                 {
-                    loadedTables = (List<Table>)formatter.Deserialize(fs);
+                    return null;
                 }
 
-                
-                using (FileStream fs = new FileStream(secPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                database.m_username = username;
+
+                string[] tableFile = Directory.GetFiles(path, "*.txt");
+
+                foreach (string file in tableFile)
                 {
-                    loadedSecurity = (Manager)formatter.Deserialize(fs);
+                    using (TextReader tr = File.OpenText(file))
+                    {
+                        List<ColumnDefinition> columnDefinitions = new List<ColumnDefinition>();
+                        string line;
+
+                        while ((line = tr.ReadLine()) != "")
+                        {
+                            ColumnDefinition col = ColumnDefinition.Parse(line);
+                            if (col == null)
+                            {
+                                database.LastErrorMessage = Constants.SyntaxError;
+                                return null;
+                            }
+
+                            columnDefinitions.Add(col);
+                        }
+
+                        string tableName = Path.GetFileNameWithoutExtension(file);
+                        database.CreateTable(tableName, columnDefinitions);
+                        Table table = database.TableByName(tableName);
+
+                        while ((line = tr.ReadLine()) != null)
+                        {
+                            Row row = Row.Parse(columnDefinitions, line);
+
+                            if (row == null)
+                            {
+                                database.LastErrorMessage = Constants.Error;
+                                return null;
+                            }
+
+                            table.Insert(row.Values);
+                        }
+                    }
                 }
-#pragma warning restore SYSLIB0011
-
-               
-                Database db = new Database();
-
-              
-                db.Tables = loadedTables ?? new List<Table>();
-                db.SecurityManager = loadedSecurity;
-
-              
-                db.m_username = username;
-
-               
-                if (db.SecurityManager == null)
-                    return null;
-
-                if (!TryVerifyPassword(db.SecurityManager, username, password))
-                    return null;
-
-                return db;
+                return database;
             }
-            catch
+            catch (Exception ex)
             {
+                database.LastErrorMessage = ex.Message;
                 return null;
             }
         }
