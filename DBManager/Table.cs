@@ -20,11 +20,16 @@ namespace DbManager
 
         public Row GetRow(int i)
         {
-            if (i >= 0 && i < Rows.Count)
+            if (i < 0 || i >= Rows.Count)
             {
-                return Rows[i];
+                return null;
             }
-            return null;
+
+            Row original = Rows[i];
+
+            if (original == null) return null;
+
+            return new Row(this.ColumnDefinitions, original.Values);
         }
 
         public void AddRow(Row row)
@@ -268,31 +273,36 @@ namespace DbManager
         public const ColumnDefinition.DataType TestColumn1Type = ColumnDefinition.DataType.String;
         public const ColumnDefinition.DataType TestColumn2Type = ColumnDefinition.DataType.Double;
         public const ColumnDefinition.DataType TestColumn3Type = ColumnDefinition.DataType.Int;
-
         public static Table CreateTestTable(string tableName = TestTableName)
         {
-            return new Table(tableName, new List<ColumnDefinition>()
+            Table table = new Table(tableName, new List<ColumnDefinition>()
             {
-                new ColumnDefinition(ColumnDefinition.DataType.String, "Id"),
-                new ColumnDefinition(ColumnDefinition.DataType.String, "Name")
+                new ColumnDefinition(TestColumn1Type, TestColumn1Name),
+                new ColumnDefinition(TestColumn2Type, TestColumn2Name),
+                new ColumnDefinition(TestColumn3Type, TestColumn3Name)
             });
+            table.Insert(new List<string>() { TestColumn1Row1, TestColumn2Row1, TestColumn3Row1 });
+            table.Insert(new List<string>() { TestColumn1Row2, TestColumn2Row2, TestColumn3Row2 });
+            table.Insert(new List<string>() { TestColumn1Row3, TestColumn2Row3, TestColumn3Row3 });
+            return table;
         }
 
         public void CheckForTesting(List<List<string>> rows)
         {
             if (rows.Count != NumRows())
                 throw new Exception($"The table has {NumRows()} rows and {rows.Count} were expected");
-
             int rowIndex = 0;
             foreach (List<string> row in rows)
             {
                 if (GetRow(rowIndex).Values.Count != row.Count)
-                    throw new Exception($"The {rowIndex}-th row has {GetRow(rowIndex).Values.Count} values and {row.Count} were expected");
+                    if (rows.Count != NumRows())
+                        throw new Exception($"The {rowIndex}-th row has {GetRow(rowIndex).Values.Count} values and {row.Count} were expected");
 
                 for (int columnIndex = 0; columnIndex < row.Count; columnIndex++)
                 {
                     if (GetRow(rowIndex).Values[columnIndex] != row[columnIndex])
-                        throw new Exception($"The [{rowIndex},{columnIndex}] element is {GetRow(rowIndex).Values[columnIndex]} instead of {row[columnIndex]}");
+                        if (rows.Count != NumRows())
+                            throw new Exception($"The [{rowIndex},{columnIndex}] element is {GetRow(rowIndex).Values[columnIndex]} instead of {row[columnIndex]}");
                 }
 
                 rowIndex++;

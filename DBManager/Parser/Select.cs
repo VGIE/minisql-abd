@@ -25,11 +25,11 @@ namespace DbManager
         {
             //TODO DEADLINE 3: Run the query and return the table as a string (or the last error in the database)
 
-            string result = database.Select(this.Table, this.Columns, this.Where).ToString();
+            Table result = database.Select(this.Table, this.Columns, this.Where);
 
             if (result != null)
             {
-                return result;
+                return result.ToString();
             }
             else
             {

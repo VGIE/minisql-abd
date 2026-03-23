@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
-using DbManager.Security;
 using DbManager;
 
 namespace SecurityParsingTests
@@ -15,21 +10,25 @@ namespace SecurityParsingTests
         public void Correct()
         {
             Grant query = MiniSQLParser.Parse("GRANT DELETE ON Table TO User") as Grant;
+            Assert.NotNull(query);
             Assert.Equal("DELETE", query.PrivilegeName);
             Assert.Equal("Table", query.TableName);
             Assert.Equal("User", query.ProfileName);
 
             query = MiniSQLParser.Parse("GRANT INSERT ON Table TO User") as Grant;
+            Assert.NotNull(query);
             Assert.Equal("INSERT", query.PrivilegeName);
             Assert.Equal("Table", query.TableName);
             Assert.Equal("User", query.ProfileName);
 
             query = MiniSQLParser.Parse("GRANT SELECT ON Table TO User") as Grant;
+            Assert.NotNull(query);
             Assert.Equal("SELECT", query.PrivilegeName);
             Assert.Equal("Table", query.TableName);
             Assert.Equal("User", query.ProfileName);
 
             query = MiniSQLParser.Parse("GRANT UPDATE ON Table TO User") as Grant;
+            Assert.NotNull(query);
             Assert.Equal("UPDATE", query.PrivilegeName);
             Assert.Equal("Table", query.TableName);
             Assert.Equal("User", query.ProfileName);
@@ -39,22 +38,42 @@ namespace SecurityParsingTests
         public void CorrectWithSpaces()
         {
             Grant query = MiniSQLParser.Parse("GRANT DELETE    ON Table TO User") as Grant;
+            Assert.NotNull(query);
             Assert.Equal("DELETE", query.PrivilegeName);
             Assert.Equal("Table", query.TableName);
             Assert.Equal("User", query.ProfileName);
 
             query = MiniSQLParser.Parse("GRANT INSERT ON Table    TO User") as Grant;
+            Assert.NotNull(query);
             Assert.Equal("INSERT", query.PrivilegeName);
             Assert.Equal("Table", query.TableName);
             Assert.Equal("User", query.ProfileName);
 
             query = MiniSQLParser.Parse("GRANT SELECT ON Table TO     User") as Grant;
+            Assert.NotNull(query);
             Assert.Equal("SELECT", query.PrivilegeName);
             Assert.Equal("Table", query.TableName);
             Assert.Equal("User", query.ProfileName);
 
             query = MiniSQLParser.Parse("GRANT    UPDATE     ON    Table    TO     User") as Grant;
+            Assert.NotNull(query);
             Assert.Equal("UPDATE", query.PrivilegeName);
+            Assert.Equal("Table", query.TableName);
+            Assert.Equal("User", query.ProfileName);
+        }
+
+        [Fact]
+        public void CorrectWithSemicolonAndWithoutSemicolon()
+        {
+            Grant query = MiniSQLParser.Parse("GRANT SELECT ON Table TO User") as Grant;
+            Assert.NotNull(query);
+            Assert.Equal("SELECT", query.PrivilegeName);
+            Assert.Equal("Table", query.TableName);
+            Assert.Equal("User", query.ProfileName);
+
+            query = MiniSQLParser.Parse("GRANT SELECT ON Table TO User;") as Grant;
+            Assert.NotNull(query);
+            Assert.Equal("SELECT", query.PrivilegeName);
             Assert.Equal("Table", query.TableName);
             Assert.Equal("User", query.ProfileName);
         }
@@ -90,11 +109,35 @@ namespace SecurityParsingTests
             query = MiniSQLParser.Parse("GRANT SELECT ON Table TO User-1") as Grant;
             Assert.Null(query);
 
-            query = MiniSQLParser.Parse("GRANT UPDATE ON Table To User_2") as Grant;
+            query = MiniSQLParser.Parse("GRANT UPDATE ON Table TO User_2") as Grant;
+            Assert.Null(query);
+
+            query = MiniSQLParser.Parse("GRANT DELETE ON Table TO 1User") as Grant;
             Assert.Null(query);
 
             query = MiniSQLParser.Parse("GRANT DELETE ON Table TO User") as Grant;
             Assert.NotNull(query);
+        }
+
+        [Fact]
+        public void IncorrectTableWithSpace()
+        {
+            Grant query = MiniSQLParser.Parse("GRANT DELETE ON Table 1 TO User") as Grant;
+            Assert.Null(query);
+        }
+
+        [Fact]
+        public void IncorrectTableWithDash()
+        {
+            Grant query = MiniSQLParser.Parse("GRANT INSERT ON Tab-le TO User") as Grant;
+            Assert.Null(query);
+        }
+
+        [Fact]
+        public void IncorrectTableStartingWithNumber()
+        {
+            Grant query = MiniSQLParser.Parse("GRANT UPDATE ON 1Table TO User") as Grant;
+            Assert.Null(query);
         }
 
         [Fact]
@@ -133,6 +176,29 @@ namespace SecurityParsingTests
 
             query = MiniSQLParser.Parse("GRANT DELETE ON Table TO User") as Grant;
             Assert.NotNull(query);
+        }
+
+        [Fact]
+        public void IncorrectWhenKeywordsAreMissingOrWrong()
+        {
+            Grant query = MiniSQLParser.Parse("GRANT DELETE Table TO User") as Grant;
+            Assert.Null(query);
+
+            query = MiniSQLParser.Parse("GRANT DELETE ON Table User") as Grant;
+            Assert.Null(query);
+
+            query = MiniSQLParser.Parse("GRANT DELETE IN Table TO User") as Grant;
+            Assert.Null(query);
+
+            query = MiniSQLParser.Parse("GRANT DELETE ON Table FOR User") as Grant;
+            Assert.Null(query);
+        }
+
+        [Fact]
+        public void IncorrectWithTooManyWords()
+        {
+            Grant query = MiniSQLParser.Parse("GRANT DELETE ON Table TO User Extra") as Grant;
+            Assert.Null(query);
         }
     }
 }

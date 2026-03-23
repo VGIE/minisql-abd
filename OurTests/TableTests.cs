@@ -12,7 +12,7 @@ namespace OurTests
         {
             Table table = Table.CreateTestTable();
 
-            List<string> row = new List<string> { "1", "John" };
+            List<string> row = new List<string> { "Annita", "1.85","19" };
 
             bool result = table.Insert(row);
 
@@ -33,16 +33,24 @@ namespace OurTests
 
         [Fact]
         public void MultipleInsert_ShouldStoreAllRows()
-        {
-            Table table = Table.CreateTestTable();
 
-            table.Insert(new List<string> { "1", "John" });
-            table.Insert(new List<string> { "2", "Jane" });
+        {
+            List<ColumnDefinition> columns = new List<ColumnDefinition>()
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.String, "Name"),
+                new ColumnDefinition(ColumnDefinition.DataType.Double, "Height"),
+                new ColumnDefinition(ColumnDefinition.DataType.Int, "Age")
+            };
+            Table table = new Table("TestTable", columns);
+
+
+            table.Insert(new List<string> { "John", "1.78","17" });
+            table.Insert(new List<string> { "Jane", "1.55","27" });
 
             table.CheckForTesting(new List<List<string>>
             {
-                new List<string> { "1", "John" },
-                new List<string> { "2", "Jane" }
+                new List<string> { "John", "1.78","17" },
+                new List<string> { "Jane", "1.55", "27" }
             });
         }
 
@@ -66,6 +74,7 @@ namespace OurTests
 
             Assert.NotNull(result);
             Assert.Equal("Name", result.Name);
+            Assert.Null(table.ColumnByName(null));
         }
 
         [Fact]
@@ -73,9 +82,16 @@ namespace OurTests
         {
             Table table = Table.CreateTestTable();
 
-            int index = table.ColumnIndexByName("Id");
+            int indexName = table.ColumnIndexByName("Name");
+            int indexHeight = table.ColumnIndexByName("Height");
+            int indexAge = table.ColumnIndexByName("Age");
+            int indexFake = table.ColumnIndexByName("Id");
 
-            Assert.Equal(0, index);
+
+            Assert.Equal(0, indexName);
+            Assert.Equal(1, indexHeight);
+            Assert.Equal(2, indexAge);
+            Assert.Equal(-1, indexFake);
         }
 
         [Fact]
@@ -85,15 +101,40 @@ namespace OurTests
 
             List<ColumnDefinition> columns = new List<ColumnDefinition>()
             {
-                new ColumnDefinition(ColumnDefinition.DataType.String, "Id"),
-                new ColumnDefinition(ColumnDefinition.DataType.String, "Name")
+                new ColumnDefinition(ColumnDefinition.DataType.String, "Name"),
+                new ColumnDefinition(ColumnDefinition.DataType.Double, "Height"),
+                new ColumnDefinition(ColumnDefinition.DataType.Int, "Age")
             };
 
-            List<string> valores = new List<string> { "001", "Rodolfo" };
-            Row row = new Row(columns, valores);
-            table.AddRow(row);
+            table.AddRow(new Row(columns, new List<string> { "David", "1.80", "30" }));
 
-            string esperado = "['Id','Name']{'001','Rodolfo'}";
+            string esperado = "['Name','Height','Age']" +
+                              "{'Rodolfo','1.62','25'}" +
+                              "{'Maider','1.67','67'}" +
+                              "{'Pepe','1.55','51'}" +
+                              "{'David','1.80','30'}";
+            Assert.Equal(esperado, table.ToString());
+        }
+
+        [Fact]
+        public void ToStringTest2()
+        {
+            Table table = Table.CreateTestTable();
+
+            List<ColumnDefinition> columns = new List<ColumnDefinition>()
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.String, "Name"),
+                new ColumnDefinition(ColumnDefinition.DataType.Double, "Height"),
+                new ColumnDefinition(ColumnDefinition.DataType.Int, "Age")
+            };
+
+            table.AddRow(new Row(columns, new List<string> { "Anne", "1.60", "21" }));
+
+            string esperado = "['Name','Height','Age']" +
+                              "{'Rodolfo','1.62','25'}" +
+                              "{'Maider','1.67','67'}" +
+                              "{'Pepe','1.55','51'}" +
+                              "{'Anne','1.60','21'}";
             Assert.Equal(esperado, table.ToString());
         }
 
@@ -102,45 +143,56 @@ namespace OurTests
         {
             Table table = Table.CreateTestTable();
 
+            table.DeleteIthRow(0);
+            table.DeleteIthRow(0);
+            table.DeleteIthRow(0);
+
             string resultado = table.ToString();
 
-            Assert.Equal("['Id','Name']", resultado);
+            string esperado = "['Name','Height','Age']";
+
+            Assert.Equal(esperado, resultado);
         }
 
         [Fact]
-        public void DeleteIthRow_ShouldDeleteFirstCreatedRow()
+        public void Delete1stRow()
         {
             Table table = Table.CreateTestTable();
 
-            List<ColumnDefinition> columns = new List<ColumnDefinition>()
-            {
-                new ColumnDefinition(ColumnDefinition.DataType.String, "Id"),
-                new ColumnDefinition(ColumnDefinition.DataType.String, "Name")
-            };
-
-            table.AddRow(new Row(columns, new List<string> { "1", "A" }));
-            table.AddRow(new Row(columns, new List<string> { "2", "B" }));
-
             table.DeleteIthRow(0);
 
-            string esperado = "['Id','Name']{'2','B'}";
+            string esperado = "['Name','Height','Age']{'Maider','1.67','67'}{'Pepe','1.55','51'}";
             Assert.Equal(esperado, table.ToString());
+        }
+
+        [Fact]
+        public void DeleteLastRow()
+        {
+            Table table = Table.CreateTestTable();
+            table.Insert(new List<string> { "First", "1.70", "20" });
+            table.Insert(new List<string> { "Last", "1.80", "30" });
+
+            table.DeleteIthRow(table.NumRows() - 1);
+
+            Assert.Equal(4, table.NumRows());
+            Assert.Equal("First", table.GetRow(3).Values[0]);
         }
 
         [Fact]
         public void DeleteIthRow_DeleteOutOfRangeRow()
         {
             Table table = Table.CreateTestTable();
+            List<string> values = new List<string> { "4", "Test", "99" };
+            table.Insert(values);
 
-            table.Insert(new List<string> { "1", "Test" });
-
-            table.DeleteIthRow(5);
+            table.DeleteIthRow(10);
             table.DeleteIthRow(-1);
 
-            table.CheckForTesting(new List<List<string>>
-            {
-                new List<string> { "1", "Test" }
-            });
+            Assert.Equal(4, table.NumRows());
+
+            Row resultRow = table.GetRow(3);
+            Assert.Equal("4", resultRow.Values[0]);
+            Assert.Equal("Test", resultRow.Values[1]);
         }
 
         [Fact]
@@ -148,15 +200,19 @@ namespace OurTests
         {
             Table table = Table.CreateTestTable();
 
-            table.Insert(new List<string> { "1", "David" });
-            table.Insert(new List<string> { "2", "Anne" });
+            Table result = table.Select(new List<string> { "Name", "Age" }, null);
 
-            Table result = table.Select(new List<string> { "Id", "Name" }, null);
+            Assert.NotNull(result);
+            Assert.Equal(2, result.NumColumns());
+            Assert.Equal("Name", result.GetColumn(0).Name);
+            Assert.Equal("Age", result.GetColumn(1).Name);
+            Assert.Equal(3, result.NumRows());
 
             result.CheckForTesting(new List<List<string>>
             {
-                new List<string> { "1", "David" },
-                new List<string> { "2", "Anne" }
+                new List<string> { "Rodolfo", "25" },
+                new List<string> { "Maider", "67" },
+                new List<string> { "Pepe", "51" }
             });
         }
 
@@ -164,9 +220,9 @@ namespace OurTests
         public void TableDeleteRowsWhereConditionIsTrueIntTest()
         {
             List<ColumnDefinition> columns = new List<ColumnDefinition>()
-    {
-        new ColumnDefinition(ColumnDefinition.DataType.Int, "Age")
-    };
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.Int, "Age")
+            };
 
             Table table = new Table("Test", columns);
 
@@ -179,44 +235,25 @@ namespace OurTests
             table.DeleteWhere(condition);
 
             table.CheckForTesting(new List<List<string>>
-    {
-        new List<string> { "10" }
-    });
-        }
-
-        [Fact]
-        public void DeleteIthRow_DeleteLastRow()
-        {
-            List<ColumnDefinition> columns = new List<ColumnDefinition>()
             {
-                new ColumnDefinition(ColumnDefinition.DataType.String, "Id"),
-                new ColumnDefinition(ColumnDefinition.DataType.String, "Name")
-            };
-
-            Table table = new Table("Test", columns);
-
-            table.AddRow(new Row(columns, new List<string> { "1", "Primera" }));
-            table.AddRow(new Row(columns, new List<string> { "2", "Ultima" }));
-
-            table.DeleteIthRow(1);
-
-            string esperado = "['Id','Name']{'1','Primera'}";
-            Assert.Equal(esperado, table.ToString());
+                new List<string> { "10" }
+            });
         }
+
 
         [Fact]
         public void RowIsConditionTrueDoubleTest()
         {
             List<ColumnDefinition> columns = new List<ColumnDefinition>()
-        {
-            new ColumnDefinition(ColumnDefinition.DataType.Double, "Height")
-        };
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.Double, "Height")
+            };
 
             Row row = new Row(columns, new List<string> { "1.70" });
 
             Condition condition = new Condition("Height", ">", "1.60");
 
-            Assert.False(row.IsTrue(condition));
+            Assert.True(row.IsTrue(condition));
         }
 
         [Fact]
@@ -239,9 +276,8 @@ namespace OurTests
         {
             Table table = Table.CreateTestTable();
 
-            table.Insert(new List<string> { "1", "David" });
-            table.Insert(new List<string> { "2", "Anne" });
-            table.Insert(new List<string> { "3", "Danna" });
+            table.Insert(new List<string> { "David", "1.80", "30" });
+            table.Insert(new List<string> { "Anne", "1.60", "25" });
 
             Condition condition = new Condition("Name", "=", "David");
 
@@ -249,8 +285,10 @@ namespace OurTests
 
             table.CheckForTesting(new List<List<string>>
             {
-                new List<string> { "2", "Anne" },
-                new List<string> { "3", "Danna" }
+                new List<string> { "Rodolfo", "1.62", "25" },
+                new List<string> { "Maider", "1.67", "67" },
+                new List<string> { "Pepe", "1.55", "51" },
+                new List<string> { "Anne", "1.60", "25" }
             });
         }
 
@@ -274,13 +312,19 @@ namespace OurTests
         {
             Table table = Table.CreateTestTable();
 
-            table.Insert(new List<string> { "1", "David" });
+            Table result = table.Select(new List<string> { "Age", "Name" }, null);
 
-            Table result = table.Select(new List<string> { "Name", "Id" }, null);
+            Assert.NotNull(result);
+            Assert.Equal(2, result.NumColumns());
+            Assert.Equal("Age", result.GetColumn(0).Name);
+            Assert.Equal("Name", result.GetColumn(1).Name);
+            Assert.Equal(3, result.NumRows());
 
             result.CheckForTesting(new List<List<string>>
             {
-                new List<string> { "David", "1" }
+                new List<string> { "25", "Rodolfo" },
+                new List<string> { "67", "Maider" },
+                new List<string> { "51", "Pepe" }
             });
         }
 
@@ -303,8 +347,7 @@ namespace OurTests
 
             table.CheckForTesting(new List<List<string>>
             {
-                new List<string> { "1.60" },
-                new List<string> { "1.80" }
+                new List<string> { "1.60" }
             });
         }
 
@@ -313,9 +356,9 @@ namespace OurTests
         {
             Table table = Table.CreateTestTable();
 
-            table.Insert(new List<string> { "1", "David" });
-            table.Insert(new List<string> { "2", "Anne" });
-            table.Insert(new List<string> { "3", "Danna" });
+            table.Insert(new List<string> { "David", "1.80", "30" });
+            table.Insert(new List<string> { "Anne", "1.65", "28" });
+            table.Insert(new List<string> { "Danna", "1.70", "22" });
 
             List<SetValue> updates = new List<SetValue>()
             {
@@ -328,9 +371,12 @@ namespace OurTests
 
             table.CheckForTesting(new List<List<string>>
             {
-                new List<string> { "1", "Besma" },
-                new List<string> { "2", "Anne" },
-                new List<string> { "3", "Danna" }
+                new List<string> { "Rodolfo", "1.62", "25" },
+                new List<string> { "Maider", "1.67", "67" },
+                new List<string> { "Pepe", "1.55", "51" },
+                new List<string> { "Besma", "1.80", "30" },
+                new List<string> { "Anne", "1.65", "28" },
+                new List<string> { "Danna", "1.70", "22" }
             });
         }
     }
