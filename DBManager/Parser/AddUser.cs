@@ -37,11 +37,14 @@ namespace DbManager
             
             if (profile.Users == null)
                 profile.Users = new List<User>();
+            User newUser = new User();
 
-            User user = new User(Username, Password);
+            newUser.Username = Username;
+
+            newUser.EncryptedPassword = Password;
 
             
-            profile.Users.Add(user);
+            profile.Users.Add(newUser);
 
             return Constants.AddUserSuccess;
         }

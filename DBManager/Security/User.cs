@@ -8,6 +8,7 @@ namespace DbManager.Security
     {
         public string Username { get; set; }
         public string EncryptedPassword { get; set; }
+    }
 
        namespace DbManager.Security
     {
@@ -25,5 +26,4 @@ namespace DbManager.Security
             public User() { }
         }
     }
-}
 }

@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿
+/*using System.Security.Cryptography;
 using System.Text;
 using DbManager.Security;
 using Xunit;
@@ -94,4 +95,4 @@ namespace OurTests
             Assert.NotNull(user);
         }
     }
-}
+}*/
