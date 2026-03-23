@@ -19,47 +19,47 @@ namespace DbManager
 
 
             const string selectPattern =
-                @"^\s*SELECT\s+(?<cols>\*|[A-Za-z][A-Za-z0-9_]*(\s*,\s*[A-Za-z][A-Za-z0-9_]*)*)\s+" +
-                @"FROM\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s*" +
-                @"(?:(?:WHERE\s+(?<wcol>[A-Za-z][A-Za-z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|[^;\s]+)\s*))?" +
-                @";?\s*$";
+                @"^\s*SELECT\s+(?<cols>\*|[a-zA-Z][a-zA-Z0-9_]*(\s*,\s*[a-zA-Z][a-zA-Z0-9_]*)*)\s+" +
+                @"FROM\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*" +
+                @"(?:(?:WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|[^;\s]+)\s*))?" +
+                @";?\s*\z";
 
            
             const string insertPattern =
-                @"^\s*INSERT\s+INTO\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s+" +
-                @"VALUES\s*\(\s*(?<vals>.*)\s*\)\s*;?\s*$";
+                @"^\s*INSERT\s+INTO\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
+                @"VALUES\s*\(\s*(?<vals>('[^']*'|[^,)\s]+)(\s*,\s*('[^']*'|[^,)\s]+))*)\s*\)\s*;?\s*\z";
 
-          
+
             const string dropTablePattern =
-                @"^\s*DROP\s+TABLE\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s*;?\s*$";
+                @"^\s*DROP\s+TABLE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*;?\s*\z";
 
             const string createTablePattern =
-                @"^\s*CREATE\s+TABLE\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s*" +
-                @"\(\s*(?<cols>.+?)\s*\)\s*;?\s*$";
+                @"^\s*CREATE\s+TABLE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*" +
+                @"\(\s*(?<cols>[a-zA-Z][a-zA-Z0-9_]*\s+[a-zA-Z][a-zA-Z0-9_]*(\s*,\s*[a-zA-Z][a-zA-Z0-9_]*\s+[a-zA-Z][a-zA-Z0-9_]*)*)\s*\)\s*;?\s*\z";
 
-        
+
             const string updateTablePattern =
-                @"^\s*UPDATE\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s+" +
-                @"SET\s+(?<set>.+?)\s+" +
-                @"WHERE\s+(?<wcol>[A-Za-z][A-Za-z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|[^;\s]+)\s*;?\s*$";
+                @"^\s*UPDATE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
+                @"SET\s+(?<set>[a-zA-Z][a-zA-Z0-9_]*\s*=\s*('[^']*'|[^,\s]+)(\s*,\s*[a-zA-Z][a-zA-Z0-9_]*\s*=\s*('[^']*'|[^,\s]+))*)\s+"+
+                @"WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|[^;\s]+)\s*;?\s*\z";
 
 
             const string deletePattern =
-                @"^\s*DELETE\s+FROM\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s+" +
-                @"WHERE\s+(?<wcol>[A-Za-z][A-Za-z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|[^;\s]+)\s*;?\s*$";
+                @"^\s*DELETE\s+FROM\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
+                @"WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|[^;\s]+)\s*;?\s*\z";
 
 
             const string createSecurityProfilePattern =
-                @"^\s*CREATE\s+SECURITY\s+PROFILE\s+(?<profile>[A-Za-z][A-Za-z0-9_]*)\s*;?\s*$";
+                @"^\s*CREATE\s+SECURITY\s+PROFILE\s+(?<profile>[a-zA-Z][a-zA-Z0-9_]*)\s*;?\s*$";
 
             const string dropSecurityProfilePattern =
-                @"^\s*DROP\s+SECURITY\s+PROFILE\s+(?<profile>[A-Za-z][A-Za-z0-9_]*)\s*;?\s*$";
+                @"^\s*DROP\s+SECURITY\s+PROFILE\s+(?<profile>[a-zA-Z][a-zA-Z0-9_]*)\s*;?\s*$";
 
             const string grantPattern =
-                @"^\s*GRANT\s+(?<privilege>DELETE|INSERT|SELECT|UPDATE)\s+ON\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s+TO\s+(?<profile>[A-Za-z][A-Za-z0-9]*)\s*;?\s*$";
+                @"^\s*GRANT\s+(?<privilege>DELETE|INSERT|SELECT|UPDATE)\s+ON\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+TO\s+(?<profile>[A-Za-z][A-Za-z0-9]*)\s*;?\s*$";
 
             const string revokePattern =
-                @"^\s*REVOKE\s+(?<privilege>DELETE|INSERT|SELECT|UPDATE)\s+ON\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s+TO\s+(?<profile>[A-Za-z][A-Za-z0-9]*)\s*;?\s*$";
+                @"^\s*REVOKE\s+(?<privilege>DELETE|INSERT|SELECT|UPDATE)\s+ON\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+TO\s+(?<profile>[A-Za-z][A-Za-z0-9]*)\s*;?\s*$";
 
 
             const string addUserPattern =
@@ -311,10 +311,10 @@ namespace DbManager
 
                 // "TYPE NAME"
                 string[] tokens = Regex.Split(item, @"\s+");
-                if (tokens.Length < 2)
+                if (tokens.Length != 2)
                     return null;
 
-                string typeText = tokens[0].Trim();
+                string typeText = tokens[0].Trim().ToUpper();
                 string nameText = tokens[1].Trim();
 
                 ColumnDefinition.DataType dt;
@@ -325,6 +325,8 @@ namespace DbManager
 
                 cols.Add(new ColumnDefinition(dt, nameText));
             }
+            if (cols.Count == 0)
+                return null;
 
             return cols;
         }
