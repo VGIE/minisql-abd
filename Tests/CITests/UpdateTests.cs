@@ -21,9 +21,8 @@ namespace SecurityParsingTests
             string result = updateQuery.Execute(db);
             Assert.Equal(Constants.TableDoesNotExistError, result);
         }
-        [Fact]
-        public void
-        
+       
+
 
     }
 }
