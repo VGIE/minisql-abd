@@ -16,13 +16,22 @@ namespace DbManager
 
         public string Execute(Database database)
         {
+            if (database == null)
+            {
+                return Constants.Error;
+            }
+
             if (!database.IsUserAdmin())
+            {
                 return Constants.UsersProfileIsNotGrantedRequiredPrivilege;
+            }
 
             bool removed = database.SecurityManager.RemoveProfile(ProfileName);
 
             if (!removed)
+            {
                 return Constants.SecurityProfileDoesNotExistError;
+            }
 
             return Constants.DropSecurityProfileSuccess;
         }
