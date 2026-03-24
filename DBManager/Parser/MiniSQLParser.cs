@@ -1,7 +1,7 @@
-using DbManager.Parser;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using DbManager.Parser;
 
 namespace DbManager
 {
@@ -17,73 +17,40 @@ namespace DbManager
             if (string.IsNullOrWhiteSpace(miniSQLQuery))
                 return null;
 
-            // --- REGEX PATTERNS ---
+            string input = miniSQLQuery.Trim();
 
-            const string selectPattern =
-                @"^\s*SELECT\s+(?<cols>\*|[A-Za-z][A-Za-z0-9_]*(\s*,\s*[A-Za-z][A-Za-z0-9_]*)*)\s+" +
-                @"FROM\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s*" +
-                @"(?:(?:WHERE\s+(?<wcol>[A-Za-z][A-Za-z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|[^;\s]+)\s*))?" +
-                @";?\s*$";
+            const string grantPattern = @"^GRANT\s+(?<privilege>DELETE|INSERT|SELECT|UPDATE)\s+ON\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s+TO\s+(?<profile>[A-Za-z][A-Za-z0-9]*)\s*;?$";
+            const string revokePattern = @"^REVOKE\s+(?<privilege>DELETE|INSERT|SELECT|UPDATE)\s+ON\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s+TO\s+(?<profile>[A-Za-z][A-Za-z0-9]*)\s*;?$";
+            const string createSecurityProfilePattern = @"^CREATE\s+SECURITY\s+PROFILE\s+(?<profile>[A-Za-z][A-Za-z0-9]*)\s*;?$";
+            const string dropSecurityProfilePattern = @"^DROP\s+SECURITY\s+PROFILE\s+(?<profile>[A-Za-z][A-Za-z0-9]*)\s*;?$";
+            const string selectPattern = @"^SELECT\s+(?<cols>\*|[A-Za-z][A-Za-z0-9_]*(\s*,\s*[A-Za-z][A-Za-z0-9_]*)*)\s+FROM\s+(?<table>[A-Za-z][A-Za-z0-9_]*)(?:\s+WHERE\s+(?<wcol>[A-Za-z][A-Za-z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|[^;\s]+))?\s*;?$";
+            const string insertPattern = @"^INSERT\s+INTO\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s+VALUES\s*\(\s*(?<vals>.*)\s*\)\s*;?$";
+            const string dropTablePattern = @"^DROP\s+TABLE\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s*;?$";
+            const string createTablePattern = @"^CREATE\s+TABLE\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s*\(\s*(?<cols>.+?)\s*\)\s*;?$";
+            const string updateTablePattern = @"^UPDATE\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s+SET\s+(?<set>.+?)\s+WHERE\s+(?<wcol>[A-Za-z][A-Za-z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|[^;\s]+)\s*;?$";
+            const string deletePattern = @"^DELETE\s+FROM\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s+WHERE\s+(?<wcol>[A-Za-z][A-Za-z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|[^;\s]+)\s*;?$";
+            const string addUserPattern = @"^ADD\s+USER\s*\(\s*(?<username>[A-Za-z][A-Za-z0-9]*)\s*,\s*(?<password>[^,\)\s]+)\s*,\s*(?<profile>[A-Za-z][A-Za-z0-9]*)\s*\)\s*;?$";
+            const string deleteUserPattern = @"^DELETE\s+USER\s+(?<username>[A-Za-z][A-Za-z0-9]*)\s*;?$";
 
-            const string insertPattern =
-                @"^\s*INSERT\s+INTO\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s+" +
-                @"VALUES\s*\(\s*(?<vals>.*)\s*\)\s*;?\s*$";
-
-            const string dropTablePattern =
-                @"^\s*DROP\s+TABLE\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s*;?\s*$";
-
-            const string createTablePattern =
-                @"^\s*CREATE\s+TABLE\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s*" +
-                @"\(\s*(?<cols>.+?)\s*\)\s*;?\s*$";
-
-            const string updateTablePattern =
-                @"^\s*UPDATE\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s+" +
-                @"SET\s+(?<set>.+?)\s+" +
-                @"WHERE\s+(?<wcol>[A-Za-z][A-Za-z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|[^;\s]+)\s*;?\s*$";
-
-            const string deletePattern =
-                @"^\s*DELETE\s+FROM\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s+" +
-                @"WHERE\s+(?<wcol>[A-Za-z][A-Za-z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|[^;\s]+)\s*;?\s*$";
-
-            const string createSecurityProfilePattern =
-                @"^\s*CREATE\s+SECURITY\s+PROFILE\s+(?<profile>[A-Za-z][A-Za-z0-9]*)\s*;?\s*$";
-
-            const string dropSecurityProfilePattern =
-                @"^\s*DROP\s+SECURITY\s+PROFILE\s+(?<profile>[A-Za-z][A-Za-z0-9]*)\s*;?\s*$";
-
-            const string grantPattern =
-                @"^\s*GRANT\s+(?<privilege>DELETE|INSERT|SELECT|UPDATE)\s+ON\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s+TO\s+(?<profile>[A-Za-z][A-Za-z0-9]*)\s*;?\s*$";
-
-            const string revokePattern =
-                @"^\s*REVOKE\s+(?<privilege>DELETE|INSERT|SELECT|UPDATE)\s+ON\s+(?<table>[A-Za-z][A-Za-z0-9_]*)\s+TO\s+(?<profile>[A-Za-z][A-Za-z0-9]*)\s*;?\s*$";
-
-            const string addUserPattern =
-                @"^\s*ADD\s+USER\s*\(\s*(?<username>[A-Za-z][A-Za-z0-9]*)\s*,\s*(?<password>[^,\)\s]+)\s*,\s*(?<profile>[A-Za-z][A-Za-z0-9]*)\s*\)\s*;?\s*$";
-
-            const string deleteUserPattern =
-                @"^\s*DELETE\s+USER\s+(?<username>[A-Za-z][A-Za-z0-9]*)\s*;?\s*$";
-
-            // --- MATCHING LOGIC ---
-
-            var mCreate = Regex.Match(miniSQLQuery, createSecurityProfilePattern);
-            if (mCreate.Success) return new CreateSecurityProfile(mCreate.Groups["profile"].Value);
-
-            var mDrop = Regex.Match(miniSQLQuery, dropSecurityProfilePattern);
-            if (mDrop.Success) return new DropSecurityProfile(mDrop.Groups["profile"].Value);
-
-            var mGrant = Regex.Match(miniSQLQuery, grantPattern);
+            var mGrant = Regex.Match(input, grantPattern);
             if (mGrant.Success) return new Grant(mGrant.Groups["privilege"].Value, mGrant.Groups["table"].Value, mGrant.Groups["profile"].Value);
 
-            var mRevoke = Regex.Match(miniSQLQuery, revokePattern);
+            var mRevoke = Regex.Match(input, revokePattern);
             if (mRevoke.Success) return new Revoke(mRevoke.Groups["privilege"].Value, mRevoke.Groups["table"].Value, mRevoke.Groups["profile"].Value);
 
-            var mAddUser = Regex.Match(miniSQLQuery, addUserPattern);
+            var mCreateSec = Regex.Match(input, createSecurityProfilePattern);
+            if (mCreateSec.Success) return new CreateSecurityProfile(mCreateSec.Groups["profile"].Value);
+
+            var mDropSec = Regex.Match(input, dropSecurityProfilePattern);
+            if (mDropSec.Success) return new DropSecurityProfile(mDropSec.Groups["profile"].Value);
+
+            var mAddUser = Regex.Match(input, addUserPattern);
             if (mAddUser.Success) return new AddUser(mAddUser.Groups["username"].Value, mAddUser.Groups["password"].Value, mAddUser.Groups["profile"].Value);
 
-            var mDeleteUser = Regex.Match(miniSQLQuery, deleteUserPattern);
+            var mDeleteUser = Regex.Match(input, deleteUserPattern);
             if (mDeleteUser.Success) return new DeleteUser(mDeleteUser.Groups["username"].Value);
 
-            var mSelect = Regex.Match(miniSQLQuery, selectPattern);
+            var mSelect = Regex.Match(input, selectPattern);
             if (mSelect.Success)
             {
                 string table = mSelect.Groups["table"].Value;
@@ -95,21 +62,21 @@ namespace DbManager
                 return new Select(table, columns, condition);
             }
 
-            var mInsert = Regex.Match(miniSQLQuery, insertPattern);
+            var mInsert = Regex.Match(input, insertPattern);
             if (mInsert.Success)
                 return new Insert(mInsert.Groups["table"].Value, CommaSeparatedValues(mInsert.Groups["vals"].Value));
 
-            var mDropTable = Regex.Match(miniSQLQuery, dropTablePattern);
+            var mDropTable = Regex.Match(input, dropTablePattern);
             if (mDropTable.Success) return new DropTable(mDropTable.Groups["table"].Value);
 
-            var mCreateTable = Regex.Match(miniSQLQuery, createTablePattern);
+            var mCreateTable = Regex.Match(input, createTablePattern);
             if (mCreateTable.Success)
             {
                 var columns = ParseCreateTableColumns(mCreateTable.Groups["cols"].Value);
                 return columns == null ? null : new CreateTable(mCreateTable.Groups["table"].Value, columns);
             }
 
-            var mUpdate = Regex.Match(miniSQLQuery, updateTablePattern);
+            var mUpdate = Regex.Match(input, updateTablePattern);
             if (mUpdate.Success)
             {
                 var setValues = ParseSetValues(mUpdate.Groups["set"].Value);
@@ -118,7 +85,7 @@ namespace DbManager
                 return new Update(mUpdate.Groups["table"].Value, setValues, condition);
             }
 
-            var mDelete = Regex.Match(miniSQLQuery, deletePattern);
+            var mDelete = Regex.Match(input, deletePattern);
             if (mDelete.Success)
                 return new Delete(mDelete.Groups["table"].Value, new Condition(mDelete.Groups["wcol"].Value, mDelete.Groups["wop"].Value, Unquote(mDelete.Groups["wval"].Value)));
 
@@ -168,7 +135,6 @@ namespace DbManager
         {
             if (string.IsNullOrWhiteSpace(setRaw)) return null;
             List<SetValue> list = new List<SetValue>();
-            // Using logic that respects commas inside quotes for SET values
             bool inQuotes = false;
             string current = "";
             List<string> pairs = new List<string>();
@@ -204,7 +170,6 @@ namespace DbManager
                 string[] tokens = Regex.Split(item.Trim(), @"\s+");
                 if (tokens.Length < 2) return null;
 
-                // Test file expects "TYPE NAME" (e.g., STRING Name)
                 string typeText = tokens[0].ToUpper().Trim();
                 string nameText = tokens[1].Trim();
 
