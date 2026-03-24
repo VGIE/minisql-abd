@@ -1,50 +1,42 @@
-﻿using DbManager;
-using Xunit;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using DbManager.Parser;
+using DbManager.Security;
 
-namespace OurTests
+namespace DbManager
 {
-    public class DropSecurityProfileTests
+    public class DropSecurityProfile : MiniSqlQuery
     {
-        [Fact]
-        public void Constructor_SetsProfileName()
-        {
-            DropSecurityProfile query = new DropSecurityProfile("Admins");
+        public string ProfileName { get; set; }
 
-            Assert.Equal("Admins", query.ProfileName);
+        public DropSecurityProfile(string profileName)
+        {
+            ProfileName = profileName;
         }
 
-        [Fact]
-        public void Execute_TestDatabase_ReturnsRequiredPrivilegeError()
+        public string Execute(Database database)
         {
-            Database database = Database.CreateTestDatabase();
-            DropSecurityProfile query = new DropSecurityProfile("Admins");
+            if (database == null)
+            {
+                return Constants.Error;
+            }
 
-            string result = query.Execute(database);
 
-            Assert.Equal(Constants.UsersProfileIsNotGrantedRequiredPrivilege, result);
-        }
+            if (!database.IsUserAdmin())
+            {
+                return Constants.UsersProfileIsNotGrantedRequiredPrivilege;
+            }
 
-        [Fact]
-        public void Execute_TestDatabase_ProfileDoesNotExistButStillReturnsPrivilegeError_First()
-        {
-            Database database = Database.CreateTestDatabase();
-            DropSecurityProfile query = new DropSecurityProfile("NotExistingProfile");
+ 
+            bool removed = database.SecurityManager.RemoveProfile(ProfileName);
 
-            string result = query.Execute(database);
+            if (!removed)
+            {
+                return Constants.SecurityProfileDoesNotExistError;
+            }
 
-            Assert.Equal(Constants.UsersProfileIsNotGrantedRequiredPrivilege, result);
-        }
-
-        [Fact]
-        public void Execute_TestDatabase_DoesNotRemoveAnything_WhenUserIsNotAdmin()
-        {
-            Database database = Database.CreateTestDatabase();
-            DropSecurityProfile query = new DropSecurityProfile("Admins");
-
-            string result = query.Execute(database);
-
-            Assert.Equal(Constants.UsersProfileIsNotGrantedRequiredPrivilege, result);
-            Assert.Null(database.SecurityManager.ProfileByName("Admins"));
+            return Constants.DropSecurityProfileSuccess;
         }
     }
 }

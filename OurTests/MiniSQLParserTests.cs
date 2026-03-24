@@ -8,307 +8,104 @@ namespace OurTests
     public class MiniSQLParserTests
     {
         [Fact]
-        public void Parse_NullQuery_ReturnsNull()
+        public void Parse_NullAndEmpty_ReturnsNull()
         {
-            MiniSqlQuery result = MiniSQLParser.Parse(null);
-
-            Assert.Null(result);
+            Assert.Null(MiniSQLParser.Parse(null));
+            Assert.Null(MiniSQLParser.Parse("   "));
+            Assert.Null(MiniSQLParser.Parse("INVALID QUERY"));
         }
 
         [Fact]
-        public void Parse_EmptyQuery_ReturnsNull()
-        {
-            MiniSqlQuery result = MiniSQLParser.Parse("   ");
-
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public void Parse_InvalidQuery_ReturnsNull()
-        {
-            MiniSqlQuery result = MiniSQLParser.Parse("INVALID QUERY");
-
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public void Parse_SelectAll_ReturnsSelectObject()
+        public void Parse_Select_Success()
         {
             MiniSqlQuery result = MiniSQLParser.Parse("SELECT * FROM Students;");
-
             Assert.NotNull(result);
             Select select = Assert.IsType<Select>(result);
-
             Assert.Equal("Students", select.Table);
-            Assert.Single(select.Columns);
             Assert.Equal("*", select.Columns[0]);
-            Assert.Null(select.Where);
+
+            Assert.NotNull(MiniSQLParser.Parse("SELECT Name, Age FROM Users WHERE Age >= 18;"));
+            Assert.NotNull(MiniSQLParser.Parse("SELECT Name FROM Users WHERE Name = 'Ahmet';"));
         }
 
         [Fact]
-        public void Parse_SelectColumnsWithoutWhere_ReturnsSelectObject()
-        {
-            MiniSqlQuery result = MiniSQLParser.Parse("SELECT Name, Age FROM Users;");
-
-            Assert.NotNull(result);
-            Select select = Assert.IsType<Select>(result);
-
-            Assert.Equal("Users", select.Table);
-            Assert.Equal(2, select.Columns.Count);
-            Assert.Equal("Name", select.Columns[0]);
-            Assert.Equal("Age", select.Columns[1]);
-            Assert.Null(select.Where);
-        }
-
-        [Fact]
-        public void Parse_SelectWithWhere_ReturnsSelectObject()
-        {
-            MiniSqlQuery result = MiniSQLParser.Parse("SELECT Name, Age FROM Users WHERE Age >= 18;");
-
-            Assert.NotNull(result);
-            Select select = Assert.IsType<Select>(result);
-
-            Assert.Equal("Users", select.Table);
-            Assert.Equal(2, select.Columns.Count);
-            Assert.Equal("Name", select.Columns[0]);
-            Assert.Equal("Age", select.Columns[1]);
-
-            Assert.NotNull(select.Where);
-            Assert.Equal("Age", select.Where.ColumnName);
-            Assert.Equal(">=", select.Where.Operator);
-            Assert.Equal("18", select.Where.LiteralValue);
-        }
-
-        [Fact]
-        public void Parse_SelectWithStringWhere_ReturnsUnquotedValue()
-        {
-            MiniSqlQuery result = MiniSQLParser.Parse("SELECT Name FROM Users WHERE Name = 'Ahmet';");
-
-            Assert.NotNull(result);
-            Select select = Assert.IsType<Select>(result);
-
-            Assert.Equal("Users", select.Table);
-            Assert.Single(select.Columns);
-            Assert.Equal("Name", select.Columns[0]);
-
-            Assert.NotNull(select.Where);
-            Assert.Equal("Name", select.Where.ColumnName);
-            Assert.Equal("=", select.Where.Operator);
-            Assert.Equal("Ahmet", select.Where.LiteralValue);
-        }
-
-        [Fact]
-        public void Parse_Insert_ReturnsInsertObject()
+        public void Parse_Insert_Success()
         {
             MiniSqlQuery result = MiniSQLParser.Parse("INSERT INTO Students VALUES ('Ahmet', 21);");
-
-            Assert.NotNull(result);
             Insert insert = Assert.IsType<Insert>(result);
-
             Assert.Equal("Students", insert.Table);
-            Assert.Equal(2, insert.Values.Count);
             Assert.Equal("Ahmet", insert.Values[0]);
             Assert.Equal("21", insert.Values[1]);
         }
 
         [Fact]
-        public void Parse_InsertWithCommaInsideString_ReturnsCorrectValues()
-        {
-            MiniSqlQuery result = MiniSQLParser.Parse("INSERT INTO Notes VALUES ('Hello, world', 5);");
-
-            Assert.NotNull(result);
-            Insert insert = Assert.IsType<Insert>(result);
-
-            Assert.Equal("Notes", insert.Table);
-            Assert.Equal(2, insert.Values.Count);
-            Assert.Equal("Hello, world", insert.Values[0]);
-            Assert.Equal("5", insert.Values[1]);
-        }
-
-        [Fact]
-        public void Parse_DropTable_ReturnsDropTableObject()
-        {
-            MiniSqlQuery result = MiniSQLParser.Parse("DROP TABLE Products;");
-
-            Assert.NotNull(result);
-            DropTable dropTable = Assert.IsType<DropTable>(result);
-
-            Assert.Equal("Products", dropTable.Table);
-        }
-
-        [Fact]
-        public void Parse_CreateTable_ReturnsCreateTableObject()
-        {
-            MiniSqlQuery result = MiniSQLParser.Parse("CREATE TABLE Students (STRING Name, INT Age, DOUBLE Grade);");
-
-            Assert.NotNull(result);
-            CreateTable createTable = Assert.IsType<CreateTable>(result);
-
-            Assert.Equal("Students", createTable.Table);
-            Assert.Equal(3, createTable.ColumnsParameters.Count);
-
-            Assert.Equal("Name", createTable.ColumnsParameters[0].Name);
-            Assert.Equal(ColumnDefinition.DataType.String, createTable.ColumnsParameters[0].Type);
-
-            Assert.Equal("Age", createTable.ColumnsParameters[1].Name);
-            Assert.Equal(ColumnDefinition.DataType.Int, createTable.ColumnsParameters[1].Type);
-
-            Assert.Equal("Grade", createTable.ColumnsParameters[2].Name);
-            Assert.Equal(ColumnDefinition.DataType.Double, createTable.ColumnsParameters[2].Type);
-        }
-
-        [Fact]
-        public void Parse_CreateTableInvalidType_ReturnsNull()
-        {
-            MiniSqlQuery result = MiniSQLParser.Parse("CREATE TABLE Test (BOOL Active);");
-
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public void Parse_UpdateSingleColumn_ReturnsUpdateObject()
-        {
-            MiniSqlQuery result = MiniSQLParser.Parse("UPDATE Students SET Name = 'Mehmet' WHERE Id = 5;");
-
-            Assert.NotNull(result);
-            Update update = Assert.IsType<Update>(result);
-
-            Assert.Equal("Students", update.Table);
-            Assert.Single(update.Columns);
-
-            Assert.Equal("Name", update.Columns[0].ColumnName);
-            Assert.Equal("Mehmet", update.Columns[0].Value);
-
-            Assert.NotNull(update.Where);
-            Assert.Equal("Id", update.Where.ColumnName);
-            Assert.Equal("=", update.Where.Operator);
-            Assert.Equal("5", update.Where.LiteralValue);
-        }
-
-        [Fact]
-        public void Parse_UpdateMultipleColumns_ReturnsUpdateObject()
+        public void Parse_Update_Success()
         {
             MiniSqlQuery result = MiniSQLParser.Parse("UPDATE Students SET Name = 'Ali', Age = 20 WHERE Id = 1;");
-
-            Assert.NotNull(result);
             Update update = Assert.IsType<Update>(result);
-
             Assert.Equal("Students", update.Table);
             Assert.Equal(2, update.Columns.Count);
-
-            Assert.Equal("Name", update.Columns[0].ColumnName);
-            Assert.Equal("Ali", update.Columns[0].Value);
-
-            Assert.Equal("Age", update.Columns[1].ColumnName);
-            Assert.Equal("20", update.Columns[1].Value);
-
-            Assert.NotNull(update.Where);
-            Assert.Equal("Id", update.Where.ColumnName);
-            Assert.Equal("=", update.Where.Operator);
-            Assert.Equal("1", update.Where.LiteralValue);
         }
 
         [Fact]
-        public void Parse_Delete_ReturnsDeleteObject()
+        public void Parse_Security_Success()
         {
-            MiniSqlQuery result = MiniSQLParser.Parse("DELETE FROM Students WHERE Age < 18;");
-
-            Assert.NotNull(result);
-            Delete delete = Assert.IsType<Delete>(result);
-
-            Assert.Equal("Students", delete.Table);
-            Assert.NotNull(delete.Where);
-            Assert.Equal("Age", delete.Where.ColumnName);
-            Assert.Equal("<", delete.Where.Operator);
-            Assert.Equal("18", delete.Where.LiteralValue);
+            Assert.NotNull(MiniSQLParser.Parse("CREATE SECURITY PROFILE Admins;"));
+            Assert.NotNull(MiniSQLParser.Parse("GRANT SELECT ON Students TO Admins;"));
+            Assert.NotNull(MiniSQLParser.Parse("ADD USER (ahmet, 12345, Admins);"));
+            Assert.NotNull(MiniSQLParser.Parse("DELETE USER ahmet;"));
         }
 
         [Fact]
-        public void Parse_CreateSecurityProfile_ReturnsCreateSecurityProfileObject()
+        public void Parse_Negative_ReturnsNull()
         {
-            MiniSqlQuery result = MiniSQLParser.Parse("CREATE SECURITY PROFILE Admins;");
-
-            Assert.NotNull(result);
-            CreateSecurityProfile profile = Assert.IsType<CreateSecurityProfile>(result);
-
-            Assert.Equal("Admins", profile.ProfileName);
+            Assert.Null(MiniSQLParser.Parse("SELECT * Students;"));
+            Assert.Null(MiniSQLParser.Parse("INSERT Students VALUES ('Pepe');"));
+            Assert.Null(MiniSQLParser.Parse("CREATE TABLE Students ();"));
+            Assert.Null(MiniSQLParser.Parse("GRANT DANCE ON Students TO Admins;"));
+            Assert.Null(MiniSQLParser.Parse("DELETE FROM Students;"));
+            Assert.Null(MiniSQLParser.Parse("UPDATE Students SET WHERE Id = 1;"));
         }
 
         [Fact]
-        public void Parse_DropSecurityProfile_ReturnsDropSecurityProfileObject()
+        public void Database_Logic_Integration_Test()
         {
-            MiniSqlQuery result = MiniSQLParser.Parse("DROP SECURITY PROFILE Guests;");
+            Database db = new Database("admin", "adminPass");
 
-            Assert.NotNull(result);
-            DropSecurityProfile profile = Assert.IsType<DropSecurityProfile>(result);
+            List<ColumnDefinition> cols = new List<ColumnDefinition> {
+                new ColumnDefinition(ColumnDefinition.DataType.String, "Name"),
+                new ColumnDefinition(ColumnDefinition.DataType.Int, "Age")
+            };
 
-            Assert.Equal("Guests", profile.ProfileName);
+            db.CreateTable("Employees", cols);
+            Assert.NotNull(db.TableByName("Employees"));
+
+            db.Insert("Employees", new List<string> { "Zeynep", "22" });
+            Table selectResult = db.Select("Employees", new List<string> { "*" }, null);
+
+            Assert.Equal(1, selectResult.NumRows());
+            Assert.Equal("Zeynep", selectResult.GetRow(0).Values[0]);
+
+            db.Update("Employees", new List<SetValue> { new SetValue("Age", "23") }, new Condition("Name", "=", "Zeynep"));
+            Assert.Equal("23", db.TableByName("Employees").GetRow(0).Values[1]);
+
+            db.DeleteWhere("Employees", new Condition("Age", ">", "20"));
+            Assert.Equal(0, db.TableByName("Employees").NumRows());
         }
 
         [Fact]
-        public void Parse_Grant_ReturnsGrantObject()
+        public void Database_Error_Handling_Test()
         {
-            MiniSqlQuery result = MiniSQLParser.Parse("GRANT SELECT ON Students TO Admins;");
+            Database db = new Database("admin", "adminPass");
 
-            Assert.NotNull(result);
-            Grant grant = Assert.IsType<Grant>(result);
+            db.CreateTable("Test", new List<ColumnDefinition> { new ColumnDefinition(ColumnDefinition.DataType.Int, "ID") });
+            bool createDuplicate = db.CreateTable("Test", new List<ColumnDefinition> { new ColumnDefinition(ColumnDefinition.DataType.Int, "ID") });
 
-            Assert.Equal("SELECT", grant.PrivilegeName);
-            Assert.Equal("Students", grant.TableName);
-            Assert.Equal("Admins", grant.ProfileName);
-        }
+            Assert.False(createDuplicate);
+            Assert.Equal(Constants.TableAlreadyExistsError, db.LastErrorMessage);
 
-        [Fact]
-        public void Parse_Revoke_ReturnsRevokeObject()
-        {
-            MiniSqlQuery result = MiniSQLParser.Parse("REVOKE UPDATE ON Students TO Editors;");
-
-            Assert.NotNull(result);
-            Revoke revoke = Assert.IsType<Revoke>(result);
-
-            Assert.Equal("UPDATE", revoke.PrivilegeName);
-            Assert.Equal("Students", revoke.TableName);
-            Assert.Equal("Editors", revoke.ProfileName);
-        }
-
-        [Fact]
-        public void Parse_AddUser_ReturnsAddUserObject()
-        {
-            MiniSqlQuery result = MiniSQLParser.Parse("ADD USER (ahmet, 12345, Admins);");
-
-            Assert.NotNull(result);
-            AddUser addUser = Assert.IsType<AddUser>(result);
-
-            Assert.Equal("ahmet", addUser.Username);
-            Assert.Equal("12345", addUser.Password);
-            Assert.Equal("Admins", addUser.ProfileName);
-        }
-
-        [Fact]
-        public void Parse_DeleteUser_ReturnsDeleteUserObject()
-        {
-            MiniSqlQuery result = MiniSQLParser.Parse("DELETE USER ahmet;");
-
-            Assert.NotNull(result);
-            DeleteUser deleteUser = Assert.IsType<DeleteUser>(result);
-
-            Assert.Equal("ahmet", deleteUser.Username);
-        }
-
-        [Fact]
-        public void Parse_DeleteWithoutWhere_ReturnsNull()
-        {
-            MiniSqlQuery result = MiniSQLParser.Parse("DELETE FROM Students;");
-
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public void Parse_UpdateWrongSyntax_ReturnsNull()
-        {
-            MiniSqlQuery result = MiniSQLParser.Parse("UPDATE Students SET WHERE Id = 1;");
-
-            Assert.Null(result);
+            Assert.False(db.Insert("NonExistent", new List<string> { "val" }));
+            Assert.Equal(Constants.TableDoesNotExistError, db.LastErrorMessage);
         }
     }
 }

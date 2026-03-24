@@ -148,15 +148,13 @@ namespace DbManager.Security
 
         public static Manager Load(string databaseName, string username)
         {
-            // Bu projede Save/Load formatý net deðil, o yüzden þimdilik boþ býrakýldý.
-            // Eðer sizde dosya formatý/klasör yolu varsa gönder, birebir doldurayým.
+
             return new Manager(username);
         }
 
         public void Save(string databaseName)
         {
-            // Bu projede Save/Load formatý net deðil, o yüzden þimdilik boþ býrakýldý.
-            // Eðer sizde dosya formatý/klasör yolu varsa gönder, birebir doldurayým.
+
         }
 
         private static string EncryptPassword(string password)
