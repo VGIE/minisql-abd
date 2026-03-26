@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using DbManager.Parser;
 using DbManager.Security;
 
@@ -21,18 +19,33 @@ namespace DbManager
 
         public string Execute(Database database)
         {
+            if (database == null)
+            {
+                return Constants.Error;
+            }
+
             if (!database.IsUserAdmin())
+            {
                 return Constants.UsersProfileIsNotGrantedRequiredPrivilege;
+            }
+
+            if (database.TableByName(TableName) == null)
+            {
+                return Constants.TableDoesNotExistError;
+            }
 
             Profile profile = database.SecurityManager.ProfileByName(ProfileName);
             if (profile == null)
+            {
                 return Constants.SecurityProfileDoesNotExistError;
+            }
 
             if (!Enum.TryParse(PrivilegeName, true, out Privilege privilege))
+            {
                 return Constants.PrivilegeDoesNotExistError;
+            }
 
-            if (!profile.GrantPrivilege(TableName, privilege))
-                return Constants.ProfileAlreadyHasPrivilege;
+            profile.GrantPrivilege(TableName, privilege);
 
             return Constants.GrantPrivilegeSuccess;
         }

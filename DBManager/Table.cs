@@ -196,12 +196,10 @@ namespace DbManager
                 {
                     int colIndex = selectedIndices[c];
 
-                    
-                    string v = (Rows[r].Values != null && colIndex < Rows[r].Values.Count)
-                        ? Rows[r].Values[colIndex]
-                        : "";
-
-                    newValues.Add(v);
+                    if (colIndex < Rows[r].Values.Count)
+                        newValues.Add(Rows[r].Values[colIndex]);
+                    else
+                        newValues.Add("");
                 }
 
                 resultTable.Insert(newValues);

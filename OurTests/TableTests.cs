@@ -200,21 +200,29 @@ namespace OurTests
         {
             Table table = Table.CreateTestTable();
 
-            Table result = table.Select(new List<string> { "Name", "Age" }, null);
+            Table result = table.Select(new List<string> { "Name","Height", "Age" }, null);
 
-            Assert.NotNull(result);
-            Assert.Equal(2, result.NumColumns());
-            Assert.Equal("Name", result.GetColumn(0).Name);
-            Assert.Equal("Age", result.GetColumn(1).Name);
             Assert.Equal(3, result.NumRows());
+            Assert.Equal(3, result.NumColumns());
+            Assert.Equal("Rodolfo", result.GetRow(0).Values[0]);
+            Assert.Equal("1.62", result.GetRow(0).Values[1]);
+            Assert.Equal("25", result.GetRow(0).Values[2]);
+            Assert.Equal("Maider", result.GetRow(1).Values[0]);
+            Assert.Equal("1.67", result.GetRow(1).Values[1]);
+            Assert.Equal("67", result.GetRow(1).Values[2]);
+            Assert.Equal("Pepe", result.GetRow(2).Values[0]);
+            Assert.Equal("1.55", result.GetRow(2).Values[1]);
+            Assert.Equal("51", result.GetRow(2).Values[2]);
 
-            result.CheckForTesting(new List<List<string>>
-            {
-                new List<string> { "Rodolfo", "25" },
-                new List<string> { "Maider", "67" },
-                new List<string> { "Pepe", "51" }
-            });
+            Table subResult = table.Select(new List<string> { "Name" }, null);
+            Assert.Equal(3, subResult.NumRows());
+            Assert.Equal(1, subResult.NumColumns());
+            Assert.Equal("Rodolfo", subResult.GetRow(0).Values[0]);
+            Assert.Equal("Maider", subResult.GetRow(1).Values[0]);
+            Assert.Equal("Pepe", subResult.GetRow(2).Values[0]);
         }
+
+
 
         [Fact]
         public void TableDeleteRowsWhereConditionIsTrueIntTest()
@@ -312,20 +320,17 @@ namespace OurTests
         {
             Table table = Table.CreateTestTable();
 
-            Table result = table.Select(new List<string> { "Age", "Name" }, null);
+            Table result = table.Select(new List<string> { "Age", "Name"}, null);
 
-            Assert.NotNull(result);
-            Assert.Equal(2, result.NumColumns());
-            Assert.Equal("Age", result.GetColumn(0).Name);
-            Assert.Equal("Name", result.GetColumn(1).Name);
             Assert.Equal(3, result.NumRows());
+            Assert.Equal(2, result.NumColumns());
+            Assert.Equal("25", result.GetRow(0).Values[0]);
+            Assert.Equal("Rodolfo", result.GetRow(0).Values[1]);
+            Assert.Equal("67", result.GetRow(1).Values[0]);
+            Assert.Equal("Maider", result.GetRow(1).Values[1]);
+            Assert.Equal("51", result.GetRow(2).Values[0]);
+            Assert.Equal("Pepe", result.GetRow(2).Values[1]);
 
-            result.CheckForTesting(new List<List<string>>
-            {
-                new List<string> { "25", "Rodolfo" },
-                new List<string> { "67", "Maider" },
-                new List<string> { "51", "Pepe" }
-            });
         }
 
         [Fact]
