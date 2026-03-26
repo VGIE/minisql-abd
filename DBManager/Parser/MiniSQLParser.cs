@@ -223,7 +223,7 @@ namespace DbManager
             if (string.IsNullOrWhiteSpace(colsRaw)) return null;
             string[] parts = colsRaw.Split(',', StringSplitOptions.RemoveEmptyEntries);
             List<ColumnDefinition> cols = new List<ColumnDefinition>();
-            foreach (var item in parts)
+            for (int i=0; i<parts.Length; i++ )
             {
                 string item = parts[i].Trim();
                 if (string.IsNullOrEmpty(item))
