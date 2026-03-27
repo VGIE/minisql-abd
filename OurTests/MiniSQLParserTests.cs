@@ -168,8 +168,25 @@ namespace OurTests
             Assert.Null(result3);
         }
 
+        [Fact]
+        public void Parse_Select_IncorrectSelectWithMultipleColumnsAndSpacesBetweenColumns()
+        {
+            Assert.Null(MiniSQLParser.Parse("SELECT Name Age FROM Users;"));
+            Assert.Null(MiniSQLParser.Parse("SELECT Name,,Age FROM Users;"));
+            Assert.Null(MiniSQLParser.Parse("SELECT Name, Age, FROM Users;"));
+            Assert.Null(MiniSQLParser.Parse("SELECT FROM Users;"));
+        }
+
+        [Fact]
+        public void Parse_Insert_IncorrectSpacesOrMissingCommas()
+        {
+            Assert.Null(MiniSQLParser.Parse("INSERT INTO Students VALUES ('Ahmet' 21);"));
+            Assert.Null(MiniSQLParser.Parse("INSERT INTO Students VALUES ('Ahmet',,21);"));
+            Assert.Null(MiniSQLParser.Parse("INSERT INTO Students VALUES ('Ahmet', 21,);"));
+            Assert.Null(MiniSQLParser.Parse("INSERT INTO Students VALUES ();"));
+        }
 
 
-       
+
     }
 }
