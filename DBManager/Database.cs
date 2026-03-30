@@ -212,95 +212,102 @@ namespace DbManager
 
 
 
-
+        private const string tbl = ".tbl";
+        private const string Delimiter = "--";
 
         public bool Save(string databaseName)
         {
-            //DEADLINE 1.C + DEADLINE 5
+            //DEADLINE 1.C: Save this database to disk with the given name
+            //If everything goes ok, return true, false otherwise.
+            //DEADLINE 5: Save the SecurityManager so that it can be loaded with the database in Load()
             try
             {
-                
-                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-
-                string dbPath = Path.Combine(baseDir, $"{databaseName}.db");
-                string secPath = Path.Combine(baseDir, $"{databaseName}.sec");
-
-#pragma warning disable SYSLIB0011
-                BinaryFormatter formatter = new BinaryFormatter();
-
-              
-                using (FileStream fs = new FileStream(dbPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                string path = Path.Combine(Directory.GetCurrentDirectory(), databaseName);
+                Directory.CreateDirectory(path);
+                foreach (Table table in Tables)
                 {
-                    formatter.Serialize(fs, Tables);
+                    string fileName = Path.Combine(path, table.Name + tbl);
+                    using (TextWriter writer = File.CreateText(fileName))
+                    {
+                        for (int i = 0; i < table.NumColumns(); i++)
+                        {
+                            writer.WriteLine(table.GetColumn(i).AsText());
+                        }
+                        writer.WriteLine(Delimiter);
+                        for (int i = 0; i < table.NumRows(); i++)
+                        {
+                            writer.WriteLine(table.GetRow(i).AsText());
+                        }
+                    }
                 }
-
-                
-                using (FileStream fs = new FileStream(secPath, FileMode.Create, FileAccess.Write, FileShare.None))
-                {
-                    formatter.Serialize(fs, SecurityManager);
-                }
-#pragma warning restore SYSLIB0011
-
+                SecurityManager.Save(Path.Combine(path, "security.dat"));
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                LastErrorMessage = Constants.Error + ex.Message;
                 return false;
             }
+
         }
 
         public static Database Load(string databaseName, string username, string password)
         {
-            
+            //DEADLINE 1.C: Load the (previously saved) database of name databaseName
+            //If everything goes ok, return the loaded database (a new instance), null otherwise.
+            //DEADLINE 5: When the Database object is created, set the username (create a new method if you must)
+            //After loading the database, load the SecurityManager and check the password is correct. If it's not, return null. If it is return the database
             try
             {
-                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-
-                string dbPath = Path.Combine(baseDir, $"{databaseName}.db");
-                string secPath = Path.Combine(baseDir, $"{databaseName}.sec");
-
-                if (!File.Exists(dbPath) || !File.Exists(secPath))
-                    return null;
-
-                List<Table> loadedTables;
-                Manager loadedSecurity;
-
-#pragma warning disable SYSLIB0011
-                BinaryFormatter formatter = new BinaryFormatter();
-
-                
-                using (FileStream fs = new FileStream(dbPath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                {
-                    loadedTables = (List<Table>)formatter.Deserialize(fs);
-                }
-
-                
-                using (FileStream fs = new FileStream(secPath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                {
-                    loadedSecurity = (Manager)formatter.Deserialize(fs);
-                }
-#pragma warning restore SYSLIB0011
-
-               
                 Database db = new Database();
-
-              
-                db.Tables = loadedTables ?? new List<Table>();
-                db.SecurityManager = loadedSecurity;
-
-              
                 db.m_username = username;
-
-               
-                if (db.SecurityManager == null)
+                string path = Path.Combine(Directory.GetCurrentDirectory(), databaseName);
+                if (!Directory.Exists(path))
+                {
                     return null;
-
-                if (!TryVerifyPassword(db.SecurityManager, username, password))
+                }
+                foreach (var filePath in Directory.GetFiles(path, "*" + tbl))
+                {
+                    using (TextReader reader = File.OpenText(filePath))
+                    {
+                        List<ColumnDefinition> columns = new List<ColumnDefinition>();
+                        string line;
+                        while ((line = reader.ReadLine()) != null && line != Delimiter)
+                        {
+                            columns.Add(ColumnDefinition.Parse(line));
+                        }
+                        string tableName = Path.GetFileNameWithoutExtension(filePath);
+                        db.CreateTable(tableName, columns);
+                        Table table = db.TableByName(tableName);
+                        if (table == null)
+                        {
+                            db.LastErrorMessage = Constants.TableDoesNotExistError;
+                            return null;
+                        }
+                        if (line == Delimiter)
+                        {
+                            while ((line = reader.ReadLine()) != null)
+                            {
+                                Row row = Row.Parse(columns, line);
+                                table.Insert(row.Values);
+                            }
+                        }
+                    }
+                }
+                string secFile = Path.Combine(path, "security.dat");
+                if (!File.Exists(secFile))
+                {
+                    db.SecurityManager = new Manager("system");
+                    return db;
+                }
+                db.SecurityManager = Manager.Load(secFile, username);
+                if (db.SecurityManager == null || !db.SecurityManager.IsPasswordCorrect(username, password))
+                {
                     return null;
-
+                }
                 return db;
             }
-            catch
+            catch (Exception ex)
             {
                 return null;
             }

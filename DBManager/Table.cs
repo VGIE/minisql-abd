@@ -165,44 +165,36 @@ namespace DbManager
 
         public Table Select(List<string> columnNames, Condition condition)
         {
-            if (columnNames == null || columnNames.Count == 0)
+            if (columnNames == null)
                 return null;
 
             List<ColumnDefinition> selectedColumns = new List<ColumnDefinition>();
+            Table resultTable = new Table("Result", selectedColumns);
+
             List<int> selectedIndices = new List<int>();
 
             for (int i = 0; i < columnNames.Count; i++)
             {
-                int idx = ColumnIndexByName(columnNames[i]);
-                if (idx < 0)
-                    return null;
-
-                selectedIndices.Add(idx);
-                selectedColumns.Add(GetColumn(idx));
+                
+                ColumnDefinition selected = ColumnByName(columnNames[i]);
+                if (selected == null)
+                    return resultTable;
+                selectedColumns.Add(new ColumnDefinition(selected.Type, selected.Name));
+                
             }
 
-            Table resultTable = new Table("Result", selectedColumns);
 
-            for (int r = 0; r < Rows.Count; r++)
+            foreach (Row fila in Rows)
             {
-                if (Rows[r] == null)
-                    continue;
-
-                if (condition != null && !Rows[r].IsTrue(condition))
-                    continue;
-
-                List<string> newValues = new List<string>();
-                for (int c = 0; c < selectedIndices.Count; c++)
+                if (condition == null || fila.IsTrue(condition))
                 {
-                    int colIndex = selectedIndices[c];
-
-                    if (colIndex < Rows[r].Values.Count)
-                        newValues.Add(Rows[r].Values[colIndex]);
-                    else
-                        newValues.Add("");
+                    List<string> newValues = new List<string>();
+                    for (int j = 0; j < selectedColumns.Count; j++)
+                    {
+                        newValues.Add(fila.GetValue(selectedColumns[j].Name));
+                    }
+                    resultTable.AddRow(new Row(selectedColumns, newValues));
                 }
-
-                resultTable.Insert(newValues);
             }
 
             return resultTable;
