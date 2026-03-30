@@ -19,34 +19,34 @@ namespace DbManager
 
 
             const string selectPattern =
-                @"^\s*SELECT\s+(?<cols>\*|[a-zA-Z][a-zA-Z0-9_]*(\s*,\s*[a-zA-Z][a-zA-Z0-9_]*)*)\s+" +
+                @"(?i)^\s*SELECT\s+(?<cols>\*|[a-zA-Z][a-zA-Z0-9_]*(?:,[a-zA-Z][a-zA-Z0-9_]*)*)\s+" +
                 @"FROM\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*" +
-                @"(?:(?:WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|[^;\s]+)\s*))?" +
+                @"(?:WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|-?[0-9.]+)\s*)?" +
                 @";?\s*\z";
 
            
             const string insertPattern =
-                @"^\s*INSERT\s+INTO\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
-                @"VALUES\s*\(\s*(?<vals>('[^']*'|[^,)\s]+)(\s*,\s*('[^']*'|[^,)\s]+))*)\s*\)\s*;?\s*\z";
+                @"(?i)^\s*INSERT\s+INTO\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
+                @"VALUES\s*\(\s*(?<vals>('[^']*'|-?[0-9.]+)(?:,('[^']*'|-?[0-9.]+))*)\s*\)\s*;?\s*\z";
 
 
             const string dropTablePattern =
-                @"^\s*DROP\s+TABLE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*;?\s*\z";
+                @"(?i)^\s*DROP\s+TABLE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*;?\s*\z";
 
             const string createTablePattern =
-                @"^\s*CREATE\s+TABLE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*" +
-                @"\(\s*(?<cols>[a-zA-Z][a-zA-Z0-9_]*\s+[a-zA-Z][a-zA-Z0-9_]*(\s*,\s*[a-zA-Z][a-zA-Z0-9_]*\s+[a-zA-Z][a-zA-Z0-9_]*)*)\s*\)\s*;?\s*\z";
+                @"(?i)^\s*CREATE\s+TABLE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*" +
+                @"\(\s*(?<cols>[a-zA-Z][a-zA-Z0-9_]*\s+[a-zA-Z][a-zA-Z0-9_]*(?:,[a-zA-Z][a-zA-Z0-9_]*\s+[a-zA-Z][a-zA-Z0-9_]*)*)\s*\)\s*;?\s*\z";
 
 
             const string updateTablePattern =
-                @"^\s*UPDATE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
-                @"SET\s+(?<set>[a-zA-Z][a-zA-Z0-9_]*\s*=\s*('[^']*'|[^,\s]+)(\s*,\s*[a-zA-Z][a-zA-Z0-9_]*\s*=\s*('[^']*'|[^,\s]+))*)\s+"+
-                @"WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|[^;\s]+)\s*;?\s*\z";
+                @"(?i)^\s*UPDATE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
+                @"SET\s+(?<set>[a-zA-Z][a-zA-Z0-9_]*=(?:'[^']*'|-?[0-9.]+)(?:,[a-zA-Z][a-zA-Z0-9_]*=(?:'[^']*'|-?[0-9.]+))*)\s+" +
+                @"WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)(?<wop>=|!=|<=|>=|<|>)(?<wval>'[^']*'|-?[0-9.]+)\s*;?\s*\z";
 
 
             const string deletePattern =
-                @"^\s*DELETE\s+FROM\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
-                @"WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|[^;\s]+)\s*;?\s*\z";
+                @"(?i)^\s*DELETE\s+FROM\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
+                @"WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)(?<wop>=|!=|<=|>=|<|>)(?<wval>'[^']*'|-?[0-9.]+)\s*;?\s*\z";
 
 
             const string createSecurityProfilePattern =
