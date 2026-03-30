@@ -242,8 +242,6 @@ namespace OurTests
             loadedDb.CheckForTesting("Users", new List<List<string>> {
                 new List<string> {"U001", "Admin"},
                 new List<string> {"U002", "User1"}
-
-
             });
         }
     }

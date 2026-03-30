@@ -309,7 +309,6 @@ namespace DbManager
             }
             catch (Exception ex)
             {
-                database.LastErrorMessage = ex.Message;
                 return null;
             }
         }
