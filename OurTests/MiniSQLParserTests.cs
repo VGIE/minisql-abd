@@ -24,7 +24,7 @@ namespace OurTests
             Assert.Equal("Students", select.Table);
             Assert.Equal("*", select.Columns[0]);
 
-            Assert.NotNull(MiniSQLParser.Parse("SELECT Name, Age FROM Users WHERE Age >= 18;"));
+            Assert.NotNull(MiniSQLParser.Parse("SELECT Name,Age FROM Users WHERE Age >= 18;"));
             Assert.NotNull(MiniSQLParser.Parse("SELECT Name FROM Users WHERE Name = 'Ahmet';"));
         }
 

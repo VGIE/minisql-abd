@@ -8,7 +8,8 @@ namespace DbManager
     public class MiniSQLParser
     {
         private const string Asterisk = "*";
-        private const string StringType = "STRING";
+        private const string StringType = "TEXT";
+
         private const string IntType = "INT";
         private const string DoubleType = "DOUBLE";
 
@@ -20,32 +21,32 @@ namespace DbManager
             string input = miniSQLQuery.Trim();
 
                const string selectPattern =
-                @"(?i)^\s*SELECT\s+(?<cols>\*|[a-zA-Z][a-zA-Z0-9_]*(?:\s*,\s*[a-zA-Z][a-zA-Z0-9_]*)*)\s+" 
+                @"^\s*SELECT\s+(?<cols>\*|[a-zA-Z][a-zA-Z0-9_]*(?:,[a-zA-Z][a-zA-Z0-9_]*)*)\s+"
                 + @"FROM\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*" +
                 @"(?:WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|-?[0-9.]+)\s*)?" +
                 @";?\s*\z";
 
            
             const string insertPattern =
-               @"(?i)^\s*INSERT\s+INTO\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
+               @"^\s*INSERT\s+INTO\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
                @"VALUES\s*\(\s*(?<vals>('[^']*'|-?[0-9.]+)(?:\s*,\s*('[^']*'|-?[0-9.]+))*)\s*\)\s*;?\s*\z";
 
 
             const string dropTablePattern =
-                @"(?i)^\s*DROP\s+TABLE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*;?\s*\z";
+                @"^\s*DROP\s+TABLE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*;?\s*\z";
 
             const string createTablePattern =
-                @"(?i)^\s*CREATE\s+TABLE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*" +
+                @"^\s*CREATE\s+TABLE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*" +
                 @"\(\s*(?<cols>[a-zA-Z][a-zA-Z0-9_]*\s+[a-zA-Z][a-zA-Z0-9_]*(?:\s*,\s*[a-zA-Z][a-zA-Z0-9_]*\s+[a-zA-Z][a-zA-Z0-9_]*)*)\s*\)\s*;?\s*\z";
 
             const string updateTablePattern =
-               @"(?i)^\s*UPDATE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
+               @"^\s*UPDATE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
                @"SET\s+(?<set>[a-zA-Z][a-zA-Z0-9_]*\s*=\s*(?:'[^']*'|-?[0-9.]+)(?:\s*,\s*[a-zA-Z][a-zA-Z0-9_]*\s*=\s*(?:'[^']*'|-?[0-9.]+))*)\s+" +
                @"WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|-?[0-9.]+)\s*;?\s*\z";
 
 
             const string deletePattern =
-                @"(?i)^\s*DELETE\s+FROM\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
+                @"^\s*DELETE\s+FROM\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
                 @"WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|-?[0-9.]+)\s*;?\s*\z";
 
             const string createSecurityProfilePattern =
@@ -232,8 +233,8 @@ namespace DbManager
                 if (tokens.Length != 2)
                     return null;
 
-                string typeText = tokens[0].Trim().ToUpper();
-                string nameText = tokens[1].Trim();
+                string nameText = tokens[0].Trim();            
+                string typeText = tokens[1].Trim().ToUpper();
 
                 ColumnDefinition.DataType dt;
                 if (typeText == StringType) dt = ColumnDefinition.DataType.String;
