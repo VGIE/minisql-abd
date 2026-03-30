@@ -53,7 +53,19 @@ namespace DbManager.Security
 
         public void AddProfile(Profile profile)
         {
-           //TODO DEADLINE 5: Add this profile
+            //TODO DEADLINE 5: Add this profile
+            if (profile == null)
+                return;
+
+            foreach (Profile p in Profiles)
+            {
+                if (p.Name == profile.Name)
+                {
+                    return; 
+                }
+            }
+
+            Profiles.Add(profile);
         }
 
         public User UserByName(string username)
@@ -66,7 +78,20 @@ namespace DbManager.Security
         public Profile ProfileByName(string profileName)
         {
             //TODO DEADLINE 5: Return the profile by name. If it doesn't exist, return null
-            
+
+            if (profileName == null || profileName == "")
+            {
+                return null;
+            }
+
+            foreach (Profile p in Profiles)
+            {
+                if (p.Name == profileName)
+                {
+                    return p; 
+                }
+            }
+
             return null;
         }
 
