@@ -1,7 +1,5 @@
-using DbManager.Parser;
 using System;
-using System.Collections.Generic;
-using System.Text;
+using DbManager.Parser;
 
 namespace DbManager
 {
@@ -16,10 +14,17 @@ namespace DbManager
 
         public string Execute(Database database)
         {
+            if (database == null)
+            {
+                throw new NullReferenceException();
+            }
+
             bool result = database.DropTable(Table);
 
             if (!result)
+            {
                 return database.LastErrorMessage;
+            }
 
             return Constants.DropTableSuccess;
         }

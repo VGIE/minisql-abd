@@ -208,5 +208,43 @@ namespace OurTests
             Assert.False(result);
             Assert.Equal(Constants.ColumnDoesNotExistError, database.LastErrorMessage);
         }
+
+        [Fact]
+        public void SaveAndLoadTest()
+        {
+            Database database = Database.CreateTestDatabase();
+            List<ColumnDefinition> userColumns = new()
+            {
+                new ColumnDefinition(ColumnDefinition.DataType.String, "Id"),
+                new ColumnDefinition(ColumnDefinition.DataType.String, "Name")
+            };
+
+            database.CreateTable("Users", userColumns);
+
+            database.Insert("Users", new List<string> { "U001", "Admin" });
+            database.Insert("Users", new List<string> { "U002", "User1" });
+
+            string dbName = "SaveAndLoadTest";
+
+            bool saveResult = database.Save(dbName);
+
+            Assert.True(saveResult);
+
+            Database loadedDb = Database.Load(dbName, Database.AdminUsername, Database.AdminPassword);
+
+            Assert.NotNull(loadedDb);
+
+            Table usersTable = loadedDb.TableByName("Users");
+
+            Assert.NotNull(usersTable);
+            Assert.Equal(2, usersTable.NumRows());
+
+            loadedDb.CheckForTesting("Users", new List<List<string>> {
+                new List<string> {"U001", "Admin"},
+                new List<string> {"U002", "User1"}
+
+
+            });
+        }
     }
 }

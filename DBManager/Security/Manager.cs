@@ -20,160 +20,100 @@ namespace DbManager.Security
 
         public bool IsUserAdmin()
         {
-            var profile = ProfileByUser(m_username);
-            if (profile == null)
-                return false;
-
-            return profile.Name == Profile.AdminProfileName;
+             //TODO DEADLINE 5: Return true if the user logged-in (m_username) is the admin, false otherwise
+            
+            return false;
         }
 
         public bool IsPasswordCorrect(string username, string password)
         {
-            var user = UserByName(username);
-            if (user == null)
-                return false;
-
-            string encrypted = EncryptPassword(password);
-            return string.Equals(user.EncryptedPassword, encrypted, StringComparison.OrdinalIgnoreCase);
+           //TODO DEADLINE 5: Return true if the user's password is correct. The given password should be encrypted before comparing with the saved one
+            
+            return false;
         }
 
         public void GrantPrivilege(string profileName, string table, Privilege privilege)
         {
-            var profile = ProfileByName(profileName);
-            if (profile == null)
-                return;
-
-            profile.GrantPrivilege(table, privilege);
+            //TODO DEADLINE 5: Add this privilege on this table to the profile with this name
+            //If the profile or the table don't exist, do nothing
         }
 
         public void RevokePrivilege(string profileName, string table, Privilege privilege)
         {
-            var profile = ProfileByName(profileName);
-            if (profile == null)
-                return;
-
-            profile.RevokePrivilege(table, privilege);
+             //TODO DEADLINE 5: Remove this privilege on this table to the profile with this name
+            //If the profile or the table don't exist, do nothing
         }
 
         public bool IsGrantedPrivilege(string username, string table, Privilege privilege)
         {
-            var profile = ProfileByUser(username);
-            if (profile == null)
-                return false;
-
-            return profile.IsGrantedPrivilege(table, privilege);
+            //TODO DEADLINE 5: Return true if the username has this privilege on this table. False otherwise (also in case of error)
+            
+            return false;
         }
 
         public void AddProfile(Profile profile)
         {
-            if (profile == null || string.IsNullOrWhiteSpace(profile.Name))
-                return;
-
-            if (ProfileByName(profile.Name) != null)
-                return;
-
-            Profiles.Add(profile);
+           //TODO DEADLINE 5: Add this profile
         }
 
         public User UserByName(string username)
         {
-            if (string.IsNullOrWhiteSpace(username))
-                return null;
-
-            for (int i = 0; i < Profiles.Count; i++)
-            {
-                var profile = Profiles[i];
-                if (profile?.Users == null)
-                    continue;
-
-                for (int j = 0; j < profile.Users.Count; j++)
-                {
-                    var user = profile.Users[j];
-                    if (user != null && user.Username == username)
-                        return user;
-                }
-            }
-
+            //TODO DEADLINE 5: Return the user by name. If it doesn't exist, return null
+            
             return null;
         }
 
         public Profile ProfileByName(string profileName)
         {
-            if (string.IsNullOrWhiteSpace(profileName))
-                return null;
-
-            for (int i = 0; i < Profiles.Count; i++)
-            {
-                var p = Profiles[i];
-                if (p != null && p.Name == profileName)
-                    return p;
-            }
-
+            //TODO DEADLINE 5: Return the profile by name. If it doesn't exist, return null
+            
             return null;
         }
 
         public Profile ProfileByUser(string username)
         {
-            if (string.IsNullOrWhiteSpace(username))
-                return null;
-
-            for (int i = 0; i < Profiles.Count; i++)
-            {
-                var profile = Profiles[i];
-                if (profile?.Users == null)
-                    continue;
-
-                for (int j = 0; j < profile.Users.Count; j++)
-                {
-                    var user = profile.Users[j];
-                    if (user != null && user.Username == username)
-                        return profile;
-                }
-            }
-
+            //TODO DEADLINE 5: Return the profile by user. If the user doesn't exist, return null
+            
             return null;
         }
 
         public bool RemoveProfile(string profileName)
         {
-            if (string.IsNullOrWhiteSpace(profileName))
-                return false;
-
-            var profile = ProfileByName(profileName);
-            if (profile == null)
-                return false;
-
-            return Profiles.Remove(profile);
+            //TODO DEADLINE 5: Remove this profile
+            
+            return false;
         }
 
-        public static Manager Load(string databaseName, string username)
+       public static Manager Load(string databaseName, string username)
         {
-            // Bu projede Save/Load formatý net deðil, o yüzden þimdilik boþ býrakýldý.
-            // Eðer sizde dosya formatý/klasör yolu varsa gönder, birebir doldurayým.
-            return new Manager(username);
+            //TODO DEADLINE 5: Load all the profiles and users saved for this database. The Manager instance should be created with the given username
+            
+            return null;
+            
         }
 
         public void Save(string databaseName)
         {
-            // Bu projede Save/Load formatý net deðil, o yüzden þimdilik boþ býrakýldý.
-            // Eðer sizde dosya formatý/klasör yolu varsa gönder, birebir doldurayým.
+            //TODO DEADLINE 5: Save all the profiles and users/passwords created for this database.
         }
 
-        private static string EncryptPassword(string password)
-        {
-            using (SHA256 sha256 = SHA256.Create())
-            {
-                byte[] bytes = Encoding.UTF8.GetBytes(password ?? string.Empty);
-                byte[] hash = sha256.ComputeHash(bytes);
 
-                StringBuilder sb = new StringBuilder(hash.Length * 2);
-                for (int i = 0; i < hash.Length; i++)
-                {
-                    sb.Append(hash[i].ToString("x2"));
-                }
 
-                return sb.ToString();
-            }
-        }
-    }
+       // private static string EncryptPassword(string password)
+       // {
+         //   using (SHA256 sha256 = SHA256.Create())
+          //  {
+          //      byte[] bytes = Encoding.UTF8.GetBytes(password ?? string.Empty);
+           //     byte[] hash = sha256.ComputeHash(bytes);
+
+           //     StringBuilder sb = new StringBuilder(hash.Length * 2);
+            //    for (int i = 0; i < hash.Length; i++)
+             //   {
+              //      sb.Append(hash[i].ToString("x2"));
+             //   }
+
+             //   return sb.ToString();
+         //   }
+      //  }
+   }
 }

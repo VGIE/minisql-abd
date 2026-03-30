@@ -1,22 +1,23 @@
-using DbManager.Parser;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using DbManager.Parser;
 
 namespace DbManager
 {
     public class MiniSQLParser
-
     {
         private const string Asterisk = "*";
         private const string StringType = "STRING";
         private const string IntType = "INT";
         private const string DoubleType = "DOUBLE";
+
         public static MiniSqlQuery Parse(string miniSQLQuery)
         {
             if (string.IsNullOrWhiteSpace(miniSQLQuery))
                 return null;
 
+            string input = miniSQLQuery.Trim();
 
             const string selectPattern =
                 @"(?i)^\s*SELECT\s+(?<cols>\*|[a-zA-Z][a-zA-Z0-9_]*(?:,[a-zA-Z][a-zA-Z0-9_]*)*)\s+" +
@@ -111,160 +112,77 @@ namespace DbManager
             if (mSelect.Success)
             {
                 string table = mSelect.Groups["table"].Value;
-
-                List<string> columns;
                 string colsText = mSelect.Groups["cols"].Value.Trim();
-                if (colsText == Asterisk)
-                {
-                    
-                    columns = new List<string> { "*" };
-                }
-                else
-                {
-                    columns = CommaSeparatedNames(colsText);
-                }
-
+                List<string> columns = (colsText == Asterisk) ? new List<string> { "*" } : CommaSeparatedNames(colsText);
                 Condition condition = null;
                 if (mSelect.Groups["wcol"].Success)
-                {
-                    condition = new Condition(
-                        mSelect.Groups["wcol"].Value,
-                        mSelect.Groups["wop"].Value,
-                        Unquote(mSelect.Groups["wval"].Value)
-                    );
-                }
-
+                    condition = new Condition(mSelect.Groups["wcol"].Value, mSelect.Groups["wop"].Value, Unquote(mSelect.Groups["wval"].Value));
                 return new Select(table, columns, condition);
             }
 
-        
-            var mInsert = Regex.Match(miniSQLQuery, insertPattern);
+            var mInsert = Regex.Match(input, insertPattern);
             if (mInsert.Success)
-            {
-                string table = mInsert.Groups["table"].Value;
-                List<string> values = CommaSeparatedValues(mInsert.Groups["vals"].Value);
-                return new Insert(table, values);
-            }
+                return new Insert(mInsert.Groups["table"].Value, CommaSeparatedValues(mInsert.Groups["vals"].Value));
 
-        
-            var mDropTable = Regex.Match(miniSQLQuery, dropTablePattern);
-            if (mDropTable.Success)
-            {
-                return new DropTable(mDropTable.Groups["table"].Value);
-            }
+            var mDropTable = Regex.Match(input, dropTablePattern);
+            if (mDropTable.Success) return new DropTable(mDropTable.Groups["table"].Value);
 
-           
-            var mCreateTable = Regex.Match(miniSQLQuery, createTablePattern);
+            var mCreateTable = Regex.Match(input, createTablePattern);
             if (mCreateTable.Success)
             {
-                string table = mCreateTable.Groups["table"].Value;
-                string colsRaw = mCreateTable.Groups["cols"].Value;
-
-                List<ColumnDefinition> columns = ParseCreateTableColumns(colsRaw);
-                if (columns == null)
-                    return null;
-
-                return new CreateTable(table, columns);
+                var columns = ParseCreateTableColumns(mCreateTable.Groups["cols"].Value);
+                return columns == null ? null : new CreateTable(mCreateTable.Groups["table"].Value, columns);
             }
 
-          
-            var mUpdate = Regex.Match(miniSQLQuery, updateTablePattern);
+            var mUpdate = Regex.Match(input, updateTablePattern);
             if (mUpdate.Success)
             {
-                string table = mUpdate.Groups["table"].Value;
-                string setRaw = mUpdate.Groups["set"].Value;
-
-                List<SetValue> setValues = ParseSetValues(setRaw);
-                if (setValues == null)
-                    return null;
-
-                Condition condition = new Condition(
-                    mUpdate.Groups["wcol"].Value,
-                    mUpdate.Groups["wop"].Value,
-                    Unquote(mUpdate.Groups["wval"].Value)
-                );
-
-                return new Update(table, setValues, condition);
+                var setValues = ParseSetValues(mUpdate.Groups["set"].Value);
+                if (setValues == null || setValues.Count == 0) return null;
+                var condition = new Condition(mUpdate.Groups["wcol"].Value, mUpdate.Groups["wop"].Value, Unquote(mUpdate.Groups["wval"].Value));
+                return new Update(mUpdate.Groups["table"].Value, setValues, condition);
             }
 
-           
-            var mDelete = Regex.Match(miniSQLQuery, deletePattern);
+            var mDelete = Regex.Match(input, deletePattern);
             if (mDelete.Success)
-            {
-                string table = mDelete.Groups["table"].Value;
+                return new Delete(mDelete.Groups["table"].Value, new Condition(mDelete.Groups["wcol"].Value, mDelete.Groups["wop"].Value, Unquote(mDelete.Groups["wval"].Value)));
 
-                Condition condition = new Condition(
-                    mDelete.Groups["wcol"].Value,
-                    mDelete.Groups["wop"].Value,
-                    Unquote(mDelete.Groups["wval"].Value)
-                );
-
-                return new Delete(table, condition);
-            }
-
-       
             return null;
         }
 
-
         static List<string> CommaSeparatedNames(string text)
         {
-            if (string.IsNullOrWhiteSpace(text))
-                return new List<string>();
-
-            string[] parts = text.Split(",", StringSplitOptions.RemoveEmptyEntries);
+            if (string.IsNullOrWhiteSpace(text)) return new List<string>();
+            string[] parts = text.Split(',', StringSplitOptions.RemoveEmptyEntries);
             List<string> result = new List<string>();
-
-            for (int i = 0; i < parts.Length; i++)
-            {
-                string name = parts[i].Trim();
-                if (!string.IsNullOrEmpty(name))
-                    result.Add(name);
-            }
-
+            foreach (var p in parts) result.Add(p.Trim());
             return result;
         }
-
 
         static List<string> CommaSeparatedValues(string text)
         {
             List<string> values = new List<string>();
             if (text == null) return values;
-
-   
             bool inQuotes = false;
             string current = "";
-
             for (int i = 0; i < text.Length; i++)
             {
                 char ch = text[i];
-
-                if (ch == '\'')
-                {
-                    inQuotes = !inQuotes;
-                    current += ch;
-                    continue;
-                }
-
+                if (ch == '\'') inQuotes = !inQuotes;
                 if (ch == ',' && !inQuotes)
                 {
                     values.Add(Unquote(current.Trim()));
                     current = "";
-                    continue;
                 }
-
-                current+=ch;
+                else current += ch;
             }
-
-            if (current.Length > 0)
-                values.Add(Unquote(current.Trim()));
-
+            if (!string.IsNullOrWhiteSpace(current)) values.Add(Unquote(current.Trim()));
             return values;
         }
 
         static string Unquote(string value)
         {
-            if (value == null) return null;
+            if (string.IsNullOrWhiteSpace(value)) return value;
             value = value.Trim();
             if (value.Length >= 2 && value.StartsWith("'") && value.EndsWith("'"))
                 return value.Substring(1, value.Length - 2);
@@ -273,37 +191,39 @@ namespace DbManager
 
         static List<SetValue> ParseSetValues(string setRaw)
         {
-            if (string.IsNullOrWhiteSpace(setRaw))
-                return null;
-
+            if (string.IsNullOrWhiteSpace(setRaw)) return null;
             List<SetValue> list = new List<SetValue>();
-            List<string> pairs = CommaSeparatedValues(setRaw); 
-
-            for (int i = 0; i < pairs.Count; i++)
+            bool inQuotes = false;
+            string current = "";
+            List<string> pairs = new List<string>();
+            for (int i = 0; i < setRaw.Length; i++)
             {
-                string p = pairs[i];
+                char ch = setRaw[i];
+                if (ch == '\'') inQuotes = !inQuotes;
+                if (ch == ',' && !inQuotes)
+                {
+                    pairs.Add(current.Trim());
+                    current = "";
+                }
+                else current += ch;
+            }
+            if (!string.IsNullOrWhiteSpace(current)) pairs.Add(current.Trim());
+
+            foreach (var p in pairs)
+            {
                 int eq = p.IndexOf('=');
                 if (eq <= 0) return null;
-
-                string col = p.Substring(0, eq).Trim();
-                string val = p.Substring(eq + 1).Trim();
-
-                list.Add(new SetValue(col, Unquote(val)));
+                list.Add(new SetValue(p.Substring(0, eq).Trim(), Unquote(p.Substring(eq + 1).Trim())));
             }
-
             return list;
         }
 
         static List<ColumnDefinition> ParseCreateTableColumns(string colsRaw)
         {
-            if (string.IsNullOrWhiteSpace(colsRaw))
-                return null;
-
-            string[] parts = colsRaw.Split(",", StringSplitOptions.RemoveEmptyEntries);
-
+            if (string.IsNullOrWhiteSpace(colsRaw)) return null;
+            string[] parts = colsRaw.Split(',', StringSplitOptions.RemoveEmptyEntries);
             List<ColumnDefinition> cols = new List<ColumnDefinition>();
-
-            for (int i = 0; i < parts.Length; i++)
+            for (int i=0; i<parts.Length; i++ )
             {
                 string item = parts[i].Trim();
                 if (string.IsNullOrEmpty(item))
