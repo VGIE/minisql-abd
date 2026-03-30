@@ -212,44 +212,35 @@ namespace DbManager
 
 
 
-
+        private const string tbl = ".tbl";
+        private const string Delimiter = "--";
 
         public bool Save(string databaseName)
         {
             //DEADLINE 1.C: Save this database to disk with the given name
             //If everything goes ok, return true, false otherwise.
             //DEADLINE 5: Save the SecurityManager so that it can be loaded with the database in Load()
-
             try
             {
                 string path = Path.Combine(Directory.GetCurrentDirectory(), databaseName);
-
-                if (Directory.Exists(path))
-                {
-                    Directory.Delete(path, true);
-                }
-
                 Directory.CreateDirectory(path);
-
                 foreach (Table table in Tables)
                 {
-                    string tablePath = Path.Combine(path, table.Name + ".txt");
-
-                    using (TextWriter tr = File.CreateText(tablePath))
+                    string fileName = Path.Combine(path, table.Name + tbl);
+                    using (TextWriter writer = File.CreateText(fileName))
                     {
                         for (int i = 0; i < table.NumColumns(); i++)
                         {
-                            tr.WriteLine(table.GetColumn(i).AsText());
+                            writer.WriteLine(table.GetColumn(i).AsText());
                         }
-
-                        tr.WriteLine("");
-
+                        writer.WriteLine(Delimiter);
                         for (int i = 0; i < table.NumRows(); i++)
                         {
-                            tr.WriteLine(table.GetRow(i).AsText());
+                            writer.WriteLine(table.GetRow(i).AsText());
                         }
                     }
                 }
+                SecurityManager.Save(Path.Combine(path, "security.dat"));
                 return true;
             }
             catch (Exception ex)
@@ -266,59 +257,55 @@ namespace DbManager
             //If everything goes ok, return the loaded database (a new instance), null otherwise.
             //DEADLINE 5: When the Database object is created, set the username (create a new method if you must)
             //After loading the database, load the SecurityManager and check the password is correct. If it's not, return null. If it is return the database
-
-            Database database = new Database();
             try
             {
+                Database db = new Database();
+                db.m_username = username;
                 string path = Path.Combine(Directory.GetCurrentDirectory(), databaseName);
-
                 if (!Directory.Exists(path))
                 {
                     return null;
                 }
-
-                database.m_username = username;
-
-                string[] tableFile = Directory.GetFiles(path, "*.txt");
-
-                foreach (string file in tableFile)
+                foreach (var filePath in Directory.GetFiles(path, "*" + tbl))
                 {
-                    using (TextReader tr = File.OpenText(file))
+                    using (TextReader reader = File.OpenText(filePath))
                     {
-                        List<ColumnDefinition> columnDefinitions = new List<ColumnDefinition>();
+                        List<ColumnDefinition> columns = new List<ColumnDefinition>();
                         string line;
-
-                        while ((line = tr.ReadLine()) != "")
+                        while ((line = reader.ReadLine()) != null && line != Delimiter)
                         {
-                            ColumnDefinition col = ColumnDefinition.Parse(line);
-                            if (col == null)
-                            {
-                                database.LastErrorMessage = Constants.SyntaxError;
-                                return null;
-                            }
-
-                            columnDefinitions.Add(col);
+                            columns.Add(ColumnDefinition.Parse(line));
                         }
-
-                        string tableName = Path.GetFileNameWithoutExtension(file);
-                        database.CreateTable(tableName, columnDefinitions);
-                        Table table = database.TableByName(tableName);
-
-                        while ((line = tr.ReadLine()) != null)
+                        string tableName = Path.GetFileNameWithoutExtension(filePath);
+                        db.CreateTable(tableName, columns);
+                        Table table = db.TableByName(tableName);
+                        if (table == null)
                         {
-                            Row row = Row.Parse(columnDefinitions, line);
-
-                            if (row == null)
+                            db.LastErrorMessage = Constants.TableDoesNotExistError;
+                            return null;
+                        }
+                        if (line == Delimiter)
+                        {
+                            while ((line = reader.ReadLine()) != null)
                             {
-                                database.LastErrorMessage = Constants.Error;
-                                return null;
+                                Row row = Row.Parse(columns, line);
+                                table.Insert(row.Values);
                             }
-
-                            table.Insert(row.Values);
                         }
                     }
                 }
-                return database;
+                string secFile = Path.Combine(path, "security.dat");
+                if (!File.Exists(secFile))
+                {
+                    db.SecurityManager = new Manager("system");
+                    return db;
+                }
+                db.SecurityManager = Manager.Load(secFile, username);
+                if (db.SecurityManager == null || !db.SecurityManager.IsPasswordCorrect(username, password))
+                {
+                    return null;
+                }
+                return db;
             }
             catch (Exception ex)
             {

@@ -210,46 +210,41 @@ namespace OurTests
         }
 
         [Fact]
-        public void TestSaveAndLoad()
+        public void SaveAndLoadTest()
         {
             Database database = Database.CreateTestDatabase();
-            string databaseName = "test1";
-
-            bool saved = database.Save(databaseName);
-            Assert.True(saved);
-
-            Database loadedData = Database.Load(databaseName, Database.AdminUsername, Database.AdminPassword);
-            Assert.NotNull(loadedData);
-
-            bool result = sameDB(database, loadedData);
-            Assert.True(result);
-        }
-
-        public bool sameDB(Database original, Database loaded)
-        {
-            foreach (Table tableO in original.Tables)
+            List<ColumnDefinition> userColumns = new()
             {
-                Table tableL = loaded.TableByName(tableO.Name);
+                new ColumnDefinition(ColumnDefinition.DataType.String, "Id"),
+                new ColumnDefinition(ColumnDefinition.DataType.String, "Name")
+            };
 
-                if (tableL == null)
-                    return false;
+            database.CreateTable("Users", userColumns);
 
-                if (tableO.Name != tableL.Name || tableO.NumColumns() != tableL.NumColumns() || tableO.NumRows() != tableL.NumRows())
-                    return false;
+            database.Insert("Users", new List<string> { "U001", "Admin" });
+            database.Insert("Users", new List<string> { "U002", "User1" });
 
-                for (int i = 0; i < tableO.NumRows(); i++)
-                {
-                    Row rowO = tableO.GetRow(i);
-                    Row rowL = tableL.GetRow(i);
+            string dbName = "SaveAndLoadTest";
 
-                    for (int j = 0; j < tableO.NumColumns(); j++)
-                    {
-                        if (rowO.Values[j] != rowL.Values[j])
-                            return false;
-                    }
-                }
-            }
-            return true;
+            bool saveResult = database.Save(dbName);
+
+            Assert.True(saveResult);
+
+            Database loadedDb = Database.Load(dbName, Database.AdminUsername, Database.AdminPassword);
+
+            Assert.NotNull(loadedDb);
+
+            Table usersTable = loadedDb.TableByName("Users");
+
+            Assert.NotNull(usersTable);
+            Assert.Equal(2, usersTable.NumRows());
+
+            loadedDb.CheckForTesting("Users", new List<List<string>> {
+                new List<string> {"U001", "Admin"},
+                new List<string> {"U002", "User1"}
+
+
+            });
         }
     }
 }
