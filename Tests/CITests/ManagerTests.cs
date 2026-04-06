@@ -8,7 +8,7 @@ namespace SecurityParsingTests
     public class ManagerTests
     {
         [Fact]
-        public void AddProfileTest()
+        public void AddProfile()
         {
             Manager manager = new Manager("admin");
 
@@ -31,7 +31,7 @@ namespace SecurityParsingTests
         }
 
         [Fact]
-        public void ProfileByNameTest()
+        public void ProfileByName()
         {
             Manager manager = new Manager("admin");
 
