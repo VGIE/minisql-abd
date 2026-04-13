@@ -73,6 +73,19 @@ namespace SecurityParsingTests
 
         }
         [Fact]
+        public void UserbyNameNull()
+        {
+            Manager manager = new Manager("admin");
+            User resultFantasma = manager.UserByName("pedro");
+            User resultNulo = manager.UserByName(null);
+            Assert.Null(resultFantasma);
+            Assert.Null(resultNulo);
+
+        }
+        
+
+
+        [Fact]
         public void Remove()
         {
 
