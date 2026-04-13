@@ -57,5 +57,40 @@ namespace SecurityParsingTests
             Profile result5 = manager.ProfileByName(null);
             Assert.Null(result5);
         }
+        [Fact]
+        public void UserbyName()
+        {
+            Manager manager = new Manager("admin");
+            Profile profile = new Profile { Name = "Estudiantes" };
+            User user = new User();
+            user.Username = "danna";
+            user.EncryptedPassword = Encryption.Encrypt("1234");
+            profile.Users.Add(user);
+            manager.AddProfile(profile);
+            User result = manager.UserByName("danna");
+            Assert.NotNull(result);
+            Assert.Equal("danna", result.Username);
+
+        }
+        [Fact]
+        public void Remove()
+        {
+
+        }
+        [Fact]
+        public void RemoveNull()
+        {
+
+        }
+
+        [Fact]
+        public void Save()
+        {
+
+        }
+        public void SaveNull()
+        {
+
+        }
     }
 }
