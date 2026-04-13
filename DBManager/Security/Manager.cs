@@ -71,8 +71,22 @@ namespace DbManager.Security
         public User UserByName(string username)
         {
             //TODO DEADLINE 5: Return the user by name. If it doesn't exist, return null
-            
-            return null;
+            if (string.IsNullOrEmpty(username))
+            {
+                return null;
+            }
+
+            foreach (Profile profile in Profiles)
+            {
+                foreach (User u in profile.Users)
+                    if (u.Username == username)
+
+                {
+                    return u;
+                }
+            }
+
+             return null;
         }
 
         public Profile ProfileByName(string profileName)
@@ -105,8 +119,14 @@ namespace DbManager.Security
         public bool RemoveProfile(string profileName)
         {
             //TODO DEADLINE 5: Remove this profile
-            
-            return false;
+            Profile profileToRemove = ProfileByName(profileName);
+            if (profileToRemove == null)
+            {
+                return false;
+            }
+            Profiles.Remove(profileToRemove);
+
+            return true;
         }
 
        public static Manager Load(string databaseName, string username)
@@ -120,7 +140,21 @@ namespace DbManager.Security
         public void Save(string databaseName)
         {
             //TODO DEADLINE 5: Save all the profiles and users/passwords created for this database.
+            string fileName = databaseName + ".sec";
+            using (StreamWriter writer = new StreamWriter(fileName))
+            {
+                foreach (Profile p in Profiles)
+                {
+                    writer.WriteLine("PROFILE:" + p.Name);
+                    foreach (User u in p.Users)
+                    {
+                        writer.WriteLine("USER:" + u.Username + "," + u.EncryptedPassword);
+                    }
+                }
+            }
         }
+        
+    }
 
 
 
