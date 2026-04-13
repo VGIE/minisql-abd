@@ -111,5 +111,32 @@ namespace SecurityParsingTests
             bool hasPrivilege = profile.IsGrantedPrivilege(tableName, myPrivilege);
             Assert.False(hasPrivilege);
         }
+
+        [Fact]
+        public void ProfileByUser_ReturnsCorrectProfile_IfUserExists()
+        {
+            Manager manager = new Manager("admin");
+            Profile profile = new Profile { Name = "IT_Dept" };
+            User user = new User();
+            user.Username = "dev_user";
+
+            profile.Users.Add(user);
+            manager.AddProfile(profile);
+
+            Profile result = manager.ProfileByUser("dev_user");
+
+            Assert.NotNull(result);
+            Assert.Equal("IT_Dept", result.Name);
+        }
+
+        [Fact]
+        public void ProfileByUser_ReturnsNull_IfUserDoesNotExist()
+        {
+            Manager manager = new Manager("admin");
+
+            Profile result = manager.ProfileByUser("unknown");
+
+            Assert.Null(result);
+        }
     }
 }
