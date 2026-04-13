@@ -28,8 +28,16 @@ namespace DbManager.Security
         public bool IsPasswordCorrect(string username, string password)
         {
            //TODO DEADLINE 5: Return true if the user's password is correct. The given password should be encrypted before comparing with the saved one
+            User user = UserByName(username);
+
+            if (user == null)
+            {
+                return false;
+            }
             
-            return false;
+            string encryptedPassword = Encryption.Encrypt(password);
+
+            return user.EncryptedPassword == encryptedPassword;
         }
 
         public void GrantPrivilege(string profileName, string table, Privilege privilege)
@@ -42,6 +50,14 @@ namespace DbManager.Security
         {
              //TODO DEADLINE 5: Remove this privilege on this table to the profile with this name
             //If the profile or the table don't exist, do nothing
+            Profile profile = ProfileByName(profileName);
+
+            if (profile == null | string.IsNullOrEmpty(table))
+            {
+                return;
+            }
+
+            profile.RevokePrivilege(table, privilege);
         }
 
         public bool IsGrantedPrivilege(string username, string table, Privilege privilege)
@@ -98,7 +114,22 @@ namespace DbManager.Security
         public Profile ProfileByUser(string username)
         {
             //TODO DEADLINE 5: Return the profile by user. If the user doesn't exist, return null
-            
+            if (string.IsNullOrEmpty(username))
+            {
+                return null;
+            }
+
+            foreach (Profile p in Profiles)
+            {
+                foreach (User u in p.Users)
+                {
+                    if (u.Username == username)
+                    {
+                        return p; 
+                    }
+                }
+            }
+
             return null;
         }
 
@@ -121,24 +152,5 @@ namespace DbManager.Security
         {
             //TODO DEADLINE 5: Save all the profiles and users/passwords created for this database.
         }
-
-
-
-       // private static string EncryptPassword(string password)
-       // {
-         //   using (SHA256 sha256 = SHA256.Create())
-          //  {
-          //      byte[] bytes = Encoding.UTF8.GetBytes(password ?? string.Empty);
-           //     byte[] hash = sha256.ComputeHash(bytes);
-
-           //     StringBuilder sb = new StringBuilder(hash.Length * 2);
-            //    for (int i = 0; i < hash.Length; i++)
-             //   {
-              //      sb.Append(hash[i].ToString("x2"));
-             //   }
-
-             //   return sb.ToString();
-         //   }
-      //  }
    }
 }

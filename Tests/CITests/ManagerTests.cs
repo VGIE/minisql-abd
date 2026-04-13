@@ -57,5 +57,59 @@ namespace SecurityParsingTests
             Profile result5 = manager.ProfileByName(null);
             Assert.Null(result5);
         }
+
+        [Fact]
+        public void IsPasswordCorrect_ValidCredentials_ReturnsTrue()
+        {
+            Manager manager = new Manager("admin");
+            Profile profile = new Profile { Name = "TestProfile" };
+
+            User user = new User();
+            user.Username = "ana";
+            user.EncryptedPassword = Encryption.Encrypt("pass123");
+
+            profile.Users.Add(user);
+            manager.AddProfile(profile);
+
+            bool result = manager.IsPasswordCorrect("ana", "pass123");
+
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void IsPasswordCorrect_InvalidPassword_ReturnsFalse()
+        {
+            Manager manager = new Manager("admin");
+            Profile profile = new Profile { Name = "TestProfile" };
+
+            User user = new User();
+            user.Username = "ana";
+            user.EncryptedPassword = Encryption.Encrypt("pass123");
+
+            profile.Users.Add(user);
+            manager.AddProfile(profile);
+
+            bool result = manager.IsPasswordCorrect("ana", "wrongpass");
+
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void RevokePrivilege_RemovesPrivilegeFromProfile()
+        {
+            Manager manager = new Manager("admin");
+            string profileName = "ManagerProfile";
+            string tableName = "Sales";
+            Profile profile = new Profile { Name = profileName };
+            manager.AddProfile(profile);
+
+            Privilege myPrivilege = Privilege.Select;
+            profile.GrantPrivilege(tableName, myPrivilege);
+
+            manager.RevokePrivilege(profileName, tableName, myPrivilege);
+
+            bool hasPrivilege = profile.IsGrantedPrivilege(tableName, myPrivilege);
+            Assert.False(hasPrivilege);
+        }
     }
 }
