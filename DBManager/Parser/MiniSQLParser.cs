@@ -26,7 +26,6 @@ namespace DbManager
                 @"(?:\s+WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|-?[0-9.]+))?" +
                 @"\s*;\s*$";
 
-
             const string insertPattern =
                @"^\s*INSERT\s+INTO\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
                @"VALUES\s*\(\s*(?<vals>('[^']*'|-?[0-9.]+)(?:\s*,\s*('[^']*'|-?[0-9.]+))*)\s*\)\s*;?\s*\z";
