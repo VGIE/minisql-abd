@@ -162,9 +162,48 @@ namespace DbManager.Security
        public static Manager Load(string databaseName, string username)
         {
             //TODO DEADLINE 5: Load all the profiles and users saved for this database. The Manager instance should be created with the given username
-            
-            return null;
-            
+
+            string fileName = databaseName + ".sec";
+
+            Manager manager = new Manager(username);
+
+            if (!File.Exists(fileName))
+                return manager;
+
+            Profile currentProfile = null;
+
+            using (StreamReader reader = new StreamReader(fileName))
+            {
+                string line;
+
+                while ((line = reader.ReadLine()) != null)
+                {
+                    if (line.StartsWith("PROFILE:"))
+                    {
+                        string profileName = line.Substring("PROFILE:".Length);
+
+                        currentProfile = new Profile { Name = profileName };
+                        manager.AddProfile(currentProfile);
+                    }
+                    else if (line.StartsWith("USER:") && currentProfile != null)
+                    {
+                        string userData = line.Substring("USER:".Length);
+                        string[] parts = userData.Split(',');
+
+                        if (parts.Length == 2)
+                        {
+                            User user = new User();
+                            user.Username = parts[0];
+                            user.EncryptedPassword = parts[1];
+
+                            currentProfile.Users.Add(user);
+                        }
+                    }
+                }
+            }
+
+            return manager;
+
         }
 
         public void Save(string databaseName)

@@ -1,6 +1,7 @@
 using DbManager;
 using DbManager.Security;
 using System;
+using System.IO;
 using Xunit;
 
 namespace SecurityParsingTests
@@ -14,15 +15,15 @@ namespace SecurityParsingTests
 
             Profile profile1 = new Profile { Name = "Sales" };
             manager.AddProfile(profile1);
-            Assert.Equal(1, manager.Profiles.Count);
+            Assert.Single(manager.Profiles);
             Assert.Equal("Sales", manager.Profiles[0].Name);
 
             Profile profileDuplicate = new Profile { Name = "Sales" };
             manager.AddProfile(profileDuplicate);
-            Assert.Equal(1, manager.Profiles.Count); // no se añade
+            Assert.Single(manager.Profiles);
 
             manager.AddProfile(null);
-            Assert.Equal(1, manager.Profiles.Count); // sigue sin cambios
+            Assert.Single(manager.Profiles);
 
             Profile profile2 = new Profile { Name = "HR" };
             manager.AddProfile(profile2);
@@ -137,6 +138,45 @@ namespace SecurityParsingTests
             Profile result = manager.ProfileByUser("unknown");
 
             Assert.Null(result);
+        }
+
+        [Fact]
+        public void LoadTest()
+        {
+            string dbName = "loaddb";
+            string fileName = dbName + ".sec";
+
+            using (StreamWriter writer = new StreamWriter(fileName))
+            {
+                writer.WriteLine("PROFILE:Students");
+                writer.WriteLine("USER:ana," + Encryption.Encrypt("1234"));
+                writer.WriteLine("USER:juan," + Encryption.Encrypt("abcd"));
+                writer.WriteLine("PROFILE:Teachers");
+                writer.WriteLine("USER:carlos," + Encryption.Encrypt("pass"));
+            }
+
+            Manager manager = Manager.Load(dbName, "admin");
+
+            Assert.Equal(2, manager.Profiles.Count);
+
+            Profile students = manager.ProfileByName("Students");
+            Assert.NotNull(students);
+            Assert.Equal(2, students.Users.Count);
+            Assert.Equal("ana", students.Users[0].Username);
+            Assert.Equal("juan", students.Users[1].Username);
+
+            Profile teachers = manager.ProfileByName("Teachers");
+            Assert.NotNull(teachers);
+            Assert.Single(teachers.Users);
+            Assert.Equal("carlos", teachers.Users[0].Username);
+        }
+
+        [Fact]
+        public void Load_FileDoesNotExist()
+        {
+            Manager manager = Manager.Load("db_inexistente", "admin");
+
+            Assert.Empty(manager.Profiles);
         }
     }
 }
