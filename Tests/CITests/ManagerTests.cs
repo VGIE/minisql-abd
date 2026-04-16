@@ -178,5 +178,47 @@ namespace SecurityParsingTests
 
             Assert.Empty(manager.Profiles);
         }
+
+        [Fact]
+        public void SaveAndLoadWithIncorrectCredentials()
+        {
+            string dbName = "incorrectpassdb";
+
+            Manager manager = new Manager("admin");
+            Profile profile = new Profile { Name = "Students" };
+
+            User user = new User("ana", "1234");
+            profile.Users.Add(user);
+            manager.AddProfile(profile);
+
+            manager.Save(dbName);
+
+            Manager loadedManager = Manager.Load(dbName, "admin");
+
+            bool result = loadedManager.IsPasswordCorrect("ana", "wrongpassword");
+
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void SaveAndLoadWithIncorrectCredentials2()
+        {
+            string dbName = "nouserdb";
+
+            Manager manager = new Manager("admin");
+            Profile profile = new Profile { Name = "Students" };
+
+            User user = new User("ana", "1234");
+            profile.Users.Add(user);
+            manager.AddProfile(profile);
+
+            manager.Save(dbName);
+
+            Manager loadedManager = Manager.Load(dbName, "admin");
+
+            bool result = loadedManager.IsPasswordCorrect("pedro", "1234");
+
+            Assert.False(result);
+        }
     }
 }
