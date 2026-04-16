@@ -117,11 +117,44 @@ namespace SecurityParsingTests
         [Fact]
         public void Save()
         {
+            Manager manager = new Manager("admin");
+            Profile profile = new Profile { Name = "Estudiantes" };
+            
+            User user = new User();
+            user.Username = "danna";
+            user.EncryptedPassword = Encryption.Encrypt("1234");
+            
+            profile.Users.Add(user);
+            manager.AddProfile(profile);
+
+            string nombreBD = "BaseNormal";
+            manager.Save(nombreBD);
+            Assert.True(System.IO.File.Exists(nombreBD + ".sec"));
+            if (System.IO.File.Exists(nombreBD + ".sec"))
+            {
+                System.IO.File.Delete(nombreBD + ".sec");
+            }
 
         }
         public void SaveNull()
         {
+            Manager manager = new Manager("admin");
+            manager.Save(null);
+            manager.Save("");
+            Assert.False(System.IO.File.Exists(".sec"));
 
+        }
+        [Fact]
+        public void Save_ManagerVacio()
+        {
+            Manager manager = new Manager("admin");
+            string nombreBD = "BaseVacia";
+            manager.Save(nombreBD);
+            Assert.True(System.IO.File.Exists(nombreBD + ".sec"));
+            if (System.IO.File.Exists(nombreBD + ".sec"))
+            {
+                System.IO.File.Delete(nombreBD + ".sec");
+            }
         }
     }
 }
