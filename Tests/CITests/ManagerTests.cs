@@ -19,7 +19,7 @@ namespace SecurityParsingTests
 
             Profile profileDuplicate = new Profile { Name = "Sales" };
             manager.AddProfile(profileDuplicate);
-            Assert.Equal(1, manager.Profiles.Count); // no se añade
+            Assert.Equal(1, manager.Profiles.Count); // no se aï¿½ade
 
             manager.AddProfile(null);
             Assert.Equal(1, manager.Profiles.Count); // sigue sin cambios
@@ -88,11 +88,29 @@ namespace SecurityParsingTests
         [Fact]
         public void Remove()
         {
+            Manager manager = new Manager("admin");
+            Profile profile = new Profile { Name = "Estudiantes" };
+            manager.AddProfile(profile);
+            Assert.Single(manager.Profiles);
+            bool result = manager.RemoveProfile("Estudiantes");
+            Assert.True(result);
+            Assert.Empty(manager.Profiles);
 
         }
         [Fact]
         public void RemoveNull()
         {
+            Manager manager = new Manager("admin");
+            bool result = manager.RemoveProfile(null);
+            Assert.False(result);
+
+        }
+        [Fact]
+        public void Remove_Dont_Exist()
+        {
+            Manager manager = new Manager("admin");
+            bool result = manager.RemoveProfile(null);
+            Assert.False(result);
 
         }
 
