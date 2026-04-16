@@ -306,5 +306,4 @@ namespace SecurityParsingTests
         }
     }
 }
-    }
-}
+    
