@@ -1,6 +1,7 @@
 using DbManager;
 using DbManager.Security;
 using System;
+using System.IO;
 using Xunit;
 
 namespace SecurityParsingTests
@@ -14,15 +15,15 @@ namespace SecurityParsingTests
 
             Profile profile1 = new Profile { Name = "Sales" };
             manager.AddProfile(profile1);
-            Assert.Equal(1, manager.Profiles.Count);
+            Assert.Single(manager.Profiles);
             Assert.Equal("Sales", manager.Profiles[0].Name);
 
             Profile profileDuplicate = new Profile { Name = "Sales" };
             manager.AddProfile(profileDuplicate);
-            Assert.Equal(1, manager.Profiles.Count); // no se a�ade
+            Assert.Single(manager.Profiles);
 
             manager.AddProfile(null);
-            Assert.Equal(1, manager.Profiles.Count); // sigue sin cambios
+            Assert.Single(manager.Profiles);
 
             Profile profile2 = new Profile { Name = "HR" };
             manager.AddProfile(profile2);
@@ -57,20 +58,86 @@ namespace SecurityParsingTests
             Profile result5 = manager.ProfileByName(null);
             Assert.Null(result5);
         }
+
         [Fact]
-        public void UserbyName()
+        public void IsPasswordCorrect_ValidCredentials_ReturnsTrue()
         {
             Manager manager = new Manager("admin");
-            Profile profile = new Profile { Name = "Estudiantes" };
+            Profile profile = new Profile { Name = "TestProfile" };
+
             User user = new User();
-            user.Username = "danna";
-            user.EncryptedPassword = Encryption.Encrypt("1234");
+            user.Username = "ana";
+            user.EncryptedPassword = Encryption.Encrypt("pass123");
+
             profile.Users.Add(user);
             manager.AddProfile(profile);
-            User result = manager.UserByName("danna");
-            Assert.NotNull(result);
-            Assert.Equal("danna", result.Username);
 
+            bool result = manager.IsPasswordCorrect("ana", "pass123");
+
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void IsPasswordCorrect_InvalidPassword_ReturnsFalse()
+        {
+            Manager manager = new Manager("admin");
+            Profile profile = new Profile { Name = "TestProfile" };
+
+            User user = new User();
+            user.Username = "ana";
+            user.EncryptedPassword = Encryption.Encrypt("pass123");
+
+            profile.Users.Add(user);
+            manager.AddProfile(profile);
+
+            bool result = manager.IsPasswordCorrect("ana", "wrongpass");
+
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void RevokePrivilege_RemovesPrivilegeFromProfile()
+        {
+            Manager manager = new Manager("admin");
+            string profileName = "ManagerProfile";
+            string tableName = "Sales";
+            Profile profile = new Profile { Name = profileName };
+            manager.AddProfile(profile);
+
+            Privilege myPrivilege = Privilege.Select;
+            profile.GrantPrivilege(tableName, myPrivilege);
+
+            manager.RevokePrivilege(profileName, tableName, myPrivilege);
+
+            bool hasPrivilege = profile.IsGrantedPrivilege(tableName, myPrivilege);
+            Assert.False(hasPrivilege);
+        }
+
+        [Fact]
+        public void ProfileByUser_ReturnsCorrectProfile_IfUserExists()
+        {
+            Manager manager = new Manager("admin");
+            Profile profile = new Profile { Name = "IT_Dept" };
+            User user = new User();
+            user.Username = "dev_user";
+
+            profile.Users.Add(user);
+            manager.AddProfile(profile);
+
+            Profile result = manager.ProfileByUser("dev_user");
+
+            Assert.NotNull(result);
+            Assert.Equal("IT_Dept", result.Name);
+        }
+
+        [Fact]
+        public void ProfileByUser_ReturnsNull_IfUserDoesNotExist()
+        {
+            Manager manager = new Manager("admin");
+
+            Profile result = manager.ProfileByUser("unknown");
+
+            Assert.Null(result);
         }
         [Fact]
         public void UserbyNameNull()
@@ -85,7 +152,88 @@ namespace SecurityParsingTests
         
 
 
+
         [Fact]
+        public void LoadTest()
+        {
+            string dbName = "loaddb";
+            string fileName = dbName + ".sec";
+
+            using (StreamWriter writer = new StreamWriter(fileName))
+            {
+                writer.WriteLine("PROFILE:Students");
+                writer.WriteLine("USER:ana," + Encryption.Encrypt("1234"));
+                writer.WriteLine("USER:juan," + Encryption.Encrypt("abcd"));
+                writer.WriteLine("PROFILE:Teachers");
+                writer.WriteLine("USER:carlos," + Encryption.Encrypt("pass"));
+            }
+
+            Manager manager = Manager.Load(dbName, "admin");
+
+            Assert.Equal(2, manager.Profiles.Count);
+
+            Profile students = manager.ProfileByName("Students");
+            Assert.NotNull(students);
+            Assert.Equal(2, students.Users.Count);
+            Assert.Equal("ana", students.Users[0].Username);
+            Assert.Equal("juan", students.Users[1].Username);
+
+            Profile teachers = manager.ProfileByName("Teachers");
+            Assert.NotNull(teachers);
+            Assert.Single(teachers.Users);
+            Assert.Equal("carlos", teachers.Users[0].Username);
+        }
+
+        [Fact]
+        public void Load_FileDoesNotExist()
+        {
+            Manager manager = Manager.Load("db_inexistente", "admin");
+
+            Assert.Empty(manager.Profiles);
+        }
+
+        [Fact]
+        public void SaveAndLoadWithIncorrectCredentials()
+        {
+            string dbName = "incorrectpassdb";
+
+            Manager manager = new Manager("admin");
+            Profile profile = new Profile { Name = "Students" };
+
+            User user = new User("ana", "1234");
+            profile.Users.Add(user);
+            manager.AddProfile(profile);
+
+            manager.Save(dbName);
+
+            Manager loadedManager = Manager.Load(dbName, "admin");
+
+            bool result = loadedManager.IsPasswordCorrect("ana", "wrongpassword");
+
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void SaveAndLoadWithIncorrectCredentials2()
+        {
+            string dbName = "nouserdb";
+
+            Manager manager = new Manager("admin");
+            Profile profile = new Profile { Name = "Students" };
+
+            User user = new User("ana", "1234");
+            profile.Users.Add(user);
+            manager.AddProfile(profile);
+
+            manager.Save(dbName);
+
+            Manager loadedManager = Manager.Load(dbName, "admin");
+
+            bool result = loadedManager.IsPasswordCorrect("pedro", "1234");
+
+            Assert.False(result);
+        }
+         [Fact]
         public void Remove()
         {
             Manager manager = new Manager("admin");
@@ -156,5 +304,7 @@ namespace SecurityParsingTests
                 System.IO.File.Delete(nombreBD + ".sec");
             }
         }
+    }
+}
     }
 }

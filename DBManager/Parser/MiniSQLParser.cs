@@ -20,12 +20,10 @@ namespace DbManager
 
             string input = miniSQLQuery.Trim();
 
-            const string selectPattern =
-                @"^\s*SELECT\s+(?<cols>\*|[a-zA-Z][a-zA-Z0-9_]*(?:\s*,\s*[a-zA-Z][a-zA-Z0-9_]*)*)\s+" +
-                @"FROM\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)" +
-                @"(?:\s+WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|-?[0-9.]+))?" +
-                @"\s*;\s*$";
-
+            const string selectPattern = @"^\s*SELECT\s+(?<cols>\*|[a-zA-Z][a-zA-Z0-9_]*(?:,[a-zA-Z][a-zA-Z0-9_]*)*)\s+" + 
+                @"FROM\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*" + 
+                @"(?:WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|-?[0-9.]+)\s*)?" + 
+                @";?\s*\z";
 
             const string insertPattern =
                @"^\s*INSERT\s+INTO\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
@@ -119,13 +117,9 @@ namespace DbManager
                 return new Select(table, columns, condition);
             }
 
-            var mInsert = Regex.Match(input, insertPattern);
-            if (mInsert.Success)
-            {
-                var vals = CommaSeparatedValues(mInsert.Groups["vals"].Value);
-                if (vals == null) return null;
-                return new Insert(mInsert.Groups["table"].Value, vals);
-            }
+            var mInsert = Regex.Match(input, insertPattern); 
+            if (mInsert.Success) 
+                return new Insert(mInsert.Groups["table"].Value, CommaSeparatedValues(mInsert.Groups["vals"].Value));
 
             var mDropTable = Regex.Match(input, dropTablePattern);
             if (mDropTable.Success) return new DropTable(mDropTable.Groups["table"].Value);
@@ -162,40 +156,27 @@ namespace DbManager
             return result;
         }
 
-        static List<string> CommaSeparatedValues(string text)
+        static List<string> CommaSeparatedValues(string text) 
         {
-            if (string.IsNullOrWhiteSpace(text))
-                return null;
-
-            List<string> values = new List<string>();
-            bool inQuotes = false;
-            string current = "";
-
-            for (int i = 0; i < text.Length; i++)
+            List<string> values = new List<string>(); 
+            if (text == null) return values; 
+            bool inQuotes = false; string current = ""; 
+            for (int i = 0; i < text.Length; i++) 
             {
-                char ch = text[i];
-
-                if (ch == '\'') inQuotes = !inQuotes;
-
-                if (ch == ',' && !inQuotes)
+                char ch = text[i]; 
+                if (ch == '\'') inQuotes = !inQuotes; 
+                if (ch == ',' && !inQuotes) 
                 {
-                    if (string.IsNullOrWhiteSpace(current))
-                        return null; 
-
-                    values.Add(Unquote(current.Trim()));
-                    current = "";
+                    values.Add(Unquote(current.Trim())); 
+                    current = ""; 
                 }
-                else
-                {
-                    current += ch;
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(current))
-                return null; 
-
-            values.Add(Unquote(current.Trim()));
-            return values;
+                else current += ch; 
+            } 
+            
+            if (!string.IsNullOrWhiteSpace(current)) 
+                values.Add(Unquote(current.Trim())); 
+            
+            return values; 
         }
 
         static string Unquote(string value)
