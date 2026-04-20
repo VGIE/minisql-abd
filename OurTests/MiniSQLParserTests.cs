@@ -24,7 +24,7 @@ namespace OurTests
             Assert.Equal("Students", select.Table);
             Assert.Equal("*", select.Columns[0]);
 
-            Assert.NotNull(MiniSQLParser.Parse("SELECT Name, Age FROM Users WHERE Age >= 18;"));
+            Assert.NotNull(MiniSQLParser.Parse("SELECT Name,Age FROM Users WHERE Age >= 18;"));
             Assert.NotNull(MiniSQLParser.Parse("SELECT Name FROM Users WHERE Name = 'Ahmet';"));
         }
 
@@ -56,11 +56,11 @@ namespace OurTests
             Assert.NotNull(MiniSQLParser.Parse("DELETE USER ahmet;"));
         }
 
-        //[Fact]
-        //public void Parse_DeleteWithExtraSpaces_ReturnsCorrectDeleteObject()
-        //{
-        //    string query = "  DELETE   FROM    Students   WHERE  Age  >  18  ;  ";
-        //    MiniSqlQuery result = MiniSQLParser.Parse(query);
+        [Fact]
+        public void Parse_DeleteWithExtraSpaces_ReturnsCorrectDeleteObject()
+        {
+            string query = "  DELETE   FROM    Students   WHERE  Age>18  ;  ";
+            MiniSqlQuery result = MiniSQLParser.Parse(query);
 
         //    Assert.NotNull(result);
         //    Delete delete = Assert.IsType<Delete>(result);
@@ -71,11 +71,11 @@ namespace OurTests
         //    Assert.Equal("18", delete.Where.LiteralValue);
         //}
 
-        //[Fact]
-        //public void Parse_DeleteWithCase_ReturnsCorrectDeleteObject()
-        //{
-        //    string query = "DELETE FROM Students WHERE Name = 'ANNE';";
-        //    MiniSqlQuery result = MiniSQLParser.Parse(query);
+        [Fact]
+        public void Parse_DeleteWithCase_ReturnsCorrectDeleteObject()
+        {
+            string query = "DELETE FROM Students WHERE Name='ANNE';";
+            MiniSqlQuery result = MiniSQLParser.Parse(query);
 
         //    Assert.NotNull(result);
         //    Delete delete = Assert.IsType<Delete>(result);
@@ -86,11 +86,11 @@ namespace OurTests
         //    Assert.Equal("ANNE", delete.Where.LiteralValue.Replace("'", ""));
         //}
 
-        //[Fact]
-        //public void Parse_DeleteSimpleStringCondition_ReturnsDeleteObject()
-        //{
-        //    string query = "DELETE FROM Employees WHERE City = 'Vitoria';";
-        //    MiniSqlQuery result = MiniSQLParser.Parse(query);
+        [Fact]
+        public void Parse_DeleteSimpleStringCondition_ReturnsDeleteObject()
+        {
+            string query = "DELETE FROM Employees WHERE City='Vitoria';";
+            MiniSqlQuery result = MiniSQLParser.Parse(query);
 
         //    Assert.NotNull(result);
         //    Delete delete = Assert.IsType<Delete>(result);

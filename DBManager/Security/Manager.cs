@@ -49,13 +49,13 @@ namespace DbManager.Security
         {
             //TODO DEADLINE 5: Remove this privilege on this table to the profile with this name
             //If the profile or the table don't exist, do nothing
-
             Profile profile = ProfileByName(profileName);
 
-            if(profile == null || string.IsNullOrEmpty(profileName))
+            if (profile == null | string.IsNullOrEmpty(table))
             {
                 return;
             }
+
             profile.RevokePrivilege(table, privilege);
         }
 
@@ -69,18 +69,56 @@ namespace DbManager.Security
         public void AddProfile(Profile profile)
         {
             //TODO DEADLINE 5: Add this profile
+            if (profile == null)
+                return;
+
+            foreach (Profile p in Profiles)
+            {
+                if (p.Name == profile.Name)
+                {
+                    return; 
+                }
+            }
+
+            Profiles.Add(profile);
         }
 
         public User UserByName(string username)
         {
             //TODO DEADLINE 5: Return the user by name. If it doesn't exist, return null
+            if (string.IsNullOrEmpty(username))
+            {
+                return null;
+            }
 
-            return null;
+            foreach (Profile profile in Profiles)
+            {
+                foreach (User u in profile.Users)
+                    if (u.Username == username)
+                    {
+                        return u;
+                    }
+            }
+
+             return null;
         }
 
         public Profile ProfileByName(string profileName)
         {
             //TODO DEADLINE 5: Return the profile by name. If it doesn't exist, return null
+
+            if (profileName == null || profileName == "")
+            {
+                return null;
+            }
+
+            foreach (Profile p in Profiles)
+            {
+                if (p.Name == profileName)
+                {
+                    return p; 
+                }
+            }
 
             return null;
         }
@@ -88,25 +126,18 @@ namespace DbManager.Security
         public Profile ProfileByUser(string username)
         {
             //TODO DEADLINE 5: Return the profile by user. If the user doesn't exist, return null
-            if(username == null || username == "")
+            if (string.IsNullOrEmpty(username))
             {
                 return null;
             }
 
-            for(int i = 0; i < Profiles.Count; i++)
+            foreach (Profile p in Profiles)
             {
-                Profile perfilActual = Profiles[i];
-
-                if (perfilActual.Users != null)
+                foreach (User u in p.Users)
                 {
-                    for (int j = 0; j < perfilActual.Users.Count; j++)
+                    if (u.Username == username)
                     {
-                        User usuarioActual = perfilActual.Users[j];
-
-                        if (usuarioActual.Username == username)
-                        {
-                            return perfilActual;
-                        }
+                        return p; 
                     }
                 }
             }
@@ -117,22 +148,83 @@ namespace DbManager.Security
         public bool RemoveProfile(string profileName)
         {
             //TODO DEADLINE 5: Remove this profile
+            Profile profileToRemove = ProfileByName(profileName);
+            if (profileToRemove == null)
+            {
+                return false;
+            }
+            Profiles.Remove(profileToRemove);
 
-            return false;
+            return true;
         }
 
         public static Manager Load(string databaseName, string username)
         {
             //TODO DEADLINE 5: Load all the profiles and users saved for this database. The Manager instance should be created with the given username
 
-            return null;
+            string fileName = databaseName + ".sec";
+
+            Manager manager = new Manager(username);
+
+            if (!File.Exists(fileName))
+                return manager;
+
+            Profile currentProfile = null;
+
+            using (StreamReader reader = new StreamReader(fileName))
+            {
+                string line;
+
+                while ((line = reader.ReadLine()) != null)
+                {
+                    if (line.StartsWith("PROFILE:"))
+                    {
+                        string profileName = line.Substring("PROFILE:".Length);
+
+                        currentProfile = new Profile { Name = profileName };
+                        manager.AddProfile(currentProfile);
+                    }
+                    else if (line.StartsWith("USER:") && currentProfile != null)
+                    {
+                        string userData = line.Substring("USER:".Length);
+                        string[] parts = userData.Split(',');
+
+                        if (parts.Length == 2)
+                        {
+                            User user = new User();
+                            user.Username = parts[0];
+                            user.EncryptedPassword = parts[1];
+
+                            currentProfile.Users.Add(user);
+                        }
+                    }
+                }
+            }
+
+            return manager;
 
         }
 
         public void Save(string databaseName)
         {
             //TODO DEADLINE 5: Save all the profiles and users/passwords created for this database.
+            if (string.IsNullOrEmpty(databaseName))
+            {
+                return; 
+            }
+            string fileName = databaseName + ".sec";
+            using (StreamWriter writer = new StreamWriter(fileName))
+            {
+                foreach (Profile p in Profiles)
+                {
+                    writer.WriteLine("PROFILE:" + p.Name);
+                    foreach (User u in p.Users)
+                    {
+                        writer.WriteLine("USER:" + u.Username + "," + u.EncryptedPassword);
+                    }
+                }
+            }
         }
-
+        
     }
 }

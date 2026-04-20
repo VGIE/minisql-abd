@@ -8,7 +8,8 @@ namespace DbManager
     public class MiniSQLParser
     {
         private const string Asterisk = "*";
-        private const string StringType = "STRING";
+        private const string StringType = "TEXT";
+
         private const string IntType = "INT";
         private const string DoubleType = "DOUBLE";
 
@@ -19,16 +20,14 @@ namespace DbManager
 
             string input = miniSQLQuery.Trim();
 
-            const string selectPattern =
-                @"^\s*SELECT\s+(?<cols>\*|[a-zA-Z][a-zA-Z0-9_]*(\s*,\s*[a-zA-Z][a-zA-Z0-9_]*)*)\s+" +
-                @"FROM\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*" +
-                @"(?:(?:WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|[^;\s]+)\s*))?" +
-                @";?\s*\z";
+            const string selectPattern = @"^\s*SELECT\s+(?<cols>\*|[a-zA-Z][a-zA-Z0-9_]*(?:,[a-zA-Z][a-zA-Z0-9_]*)*)\s+" + 
+                @"FROM\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*" + 
+                @"(?:WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|-?[0-9.]+)\s*)?" +
+                @"(?:\s*;\s*)?\z";
 
-           
             const string insertPattern =
-                @"^\s*INSERT\s+INTO\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
-                @"VALUES\s*\(\s*(?<vals>('[^']*'|[^,)\s]+)(\s*,\s*('[^']*'|[^,)\s]+))*)\s*\)\s*;?\s*\z";
+               @"^\s*INSERT\s+INTO\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
+               @"VALUES\s*\(\s*(?<vals>('[^']*'|-?[0-9.]+)(?:\s*,\s*('[^']*'|-?[0-9.]+))*)\s*\)\s*;?\s*\z";
 
 
             const string dropTablePattern =
@@ -36,19 +35,17 @@ namespace DbManager
 
             const string createTablePattern =
                 @"^\s*CREATE\s+TABLE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*" +
-                @"\(\s*(?<cols>[a-zA-Z][a-zA-Z0-9_]*\s+[a-zA-Z][a-zA-Z0-9_]*(\s*,\s*[a-zA-Z][a-zA-Z0-9_]*\s+[a-zA-Z][a-zA-Z0-9_]*)*)\s*\)\s*;?\s*\z";
-
+                @"\(\s*(?<cols>[a-zA-Z][a-zA-Z0-9_]*\s+[a-zA-Z][a-zA-Z0-9_]*(?:\s*,\s*[a-zA-Z][a-zA-Z0-9_]*\s+[a-zA-Z][a-zA-Z0-9_]*)*)\s*\)\s*;?\s*\z";
 
             const string updateTablePattern =
-                @"^\s*UPDATE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
-                @"SET\s+(?<set>[a-zA-Z][a-zA-Z0-9_]*\s*=\s*('[^']*'|[^,\s]+)(\s*,\s*[a-zA-Z][a-zA-Z0-9_]*\s*=\s*('[^']*'|[^,\s]+))*)\s+"+
-                @"WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|[^;\s]+)\s*;?\s*\z";
+               @"^\s*UPDATE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
+               @"SET\s+(?<set>[a-zA-Z][a-zA-Z0-9_]*\s*=\s*(?:'[^']*'|-?[0-9.]+)(?:\s*,\s*[a-zA-Z][a-zA-Z0-9_]*\s*=\s*(?:'[^']*'|-?[0-9.]+))*)\s+" +
+               @"WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|-?[0-9.]+)\s*;?\s*\z";
 
 
             const string deletePattern =
                 @"^\s*DELETE\s+FROM\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
-                @"WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|[^;\s]+)\s*;?\s*\z";
-
+                @"WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)(?<wop>=|!=|<=|>=|<|>)(?<wval>'[^']*'|-?[0-9.]+)\s*;?\s*\z";
 
             const string createSecurityProfilePattern =
                 @"^\s*CREATE\s+SECURITY\s+PROFILE\s+(?<profile>[a-zA-Z][a-zA-Z0-9_]*)\s*;?\s*$";
@@ -120,8 +117,8 @@ namespace DbManager
                 return new Select(table, columns, condition);
             }
 
-            var mInsert = Regex.Match(input, insertPattern);
-            if (mInsert.Success)
+            var mInsert = Regex.Match(input, insertPattern); 
+            if (mInsert.Success) 
                 return new Insert(mInsert.Groups["table"].Value, CommaSeparatedValues(mInsert.Groups["vals"].Value));
 
             var mDropTable = Regex.Match(input, dropTablePattern);
@@ -159,25 +156,27 @@ namespace DbManager
             return result;
         }
 
-        static List<string> CommaSeparatedValues(string text)
+        static List<string> CommaSeparatedValues(string text) 
         {
-            List<string> values = new List<string>();
-            if (text == null) return values;
-            bool inQuotes = false;
-            string current = "";
-            for (int i = 0; i < text.Length; i++)
+            List<string> values = new List<string>(); 
+            if (text == null) return values; 
+            bool inQuotes = false; string current = ""; 
+            for (int i = 0; i < text.Length; i++) 
             {
-                char ch = text[i];
-                if (ch == '\'') inQuotes = !inQuotes;
-                if (ch == ',' && !inQuotes)
+                char ch = text[i]; 
+                if (ch == '\'') inQuotes = !inQuotes; 
+                if (ch == ',' && !inQuotes) 
                 {
-                    values.Add(Unquote(current.Trim()));
-                    current = "";
+                    values.Add(Unquote(current.Trim())); 
+                    current = ""; 
                 }
-                else current += ch;
-            }
-            if (!string.IsNullOrWhiteSpace(current)) values.Add(Unquote(current.Trim()));
-            return values;
+                else current += ch; 
+            } 
+            
+            if (!string.IsNullOrWhiteSpace(current)) 
+                values.Add(Unquote(current.Trim())); 
+            
+            return values; 
         }
 
         static string Unquote(string value)
@@ -234,8 +233,8 @@ namespace DbManager
                 if (tokens.Length != 2)
                     return null;
 
-                string typeText = tokens[0].Trim().ToUpper();
-                string nameText = tokens[1].Trim();
+                string nameText = tokens[0].Trim();            
+                string typeText = tokens[1].Trim().ToUpper();
 
                 ColumnDefinition.DataType dt;
                 if (typeText == StringType) dt = ColumnDefinition.DataType.String;
