@@ -22,8 +22,8 @@ namespace DbManager
 
             const string selectPattern = @"^\s*SELECT\s+(?<cols>\*|[a-zA-Z][a-zA-Z0-9_]*(?:,[a-zA-Z][a-zA-Z0-9_]*)*)\s+" + 
                 @"FROM\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*" + 
-                @"(?:WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|-?[0-9.]+)\s*)?" + 
-                @";?\s*\z";
+                @"(?:WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|-?[0-9.]+)\s*)?" +
+                @"(?:\s*;\s*)?\z";
 
             const string insertPattern =
                @"^\s*INSERT\s+INTO\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
