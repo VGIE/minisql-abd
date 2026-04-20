@@ -30,13 +30,14 @@ namespace DbManager.Security
             //TODO DEADLINE 5: Return true if the user's password is correct. The given password should be encrypted before comparing with the saved one
             User user = UserByName(username);
 
-            if (user == null || string.IsNullOrEmpty(password))
+            if (user == null)
             {
                 return false;
             }
 
+            string encryptedPassword = Encryption.Encrypt(password);
 
-            return user.EncryptedPassword == password;
+            return user.EncryptedPassword == encryptedPassword;
         }
 
         public void GrantPrivilege(string profileName, string table, Privilege privilege)
@@ -76,7 +77,7 @@ namespace DbManager.Security
             {
                 if (p.Name == profile.Name)
                 {
-                    return; 
+                    return;
                 }
             }
 
@@ -100,7 +101,7 @@ namespace DbManager.Security
                     }
             }
 
-             return null;
+            return null;
         }
 
         public Profile ProfileByName(string profileName)
@@ -116,7 +117,7 @@ namespace DbManager.Security
             {
                 if (p.Name == profileName)
                 {
-                    return p; 
+                    return p;
                 }
             }
 
@@ -137,7 +138,7 @@ namespace DbManager.Security
                 {
                     if (u.Username == username)
                     {
-                        return p; 
+                        return p;
                     }
                 }
             }
@@ -210,7 +211,7 @@ namespace DbManager.Security
             //TODO DEADLINE 5: Save all the profiles and users/passwords created for this database.
             if (string.IsNullOrEmpty(databaseName))
             {
-                return; 
+                return;
             }
             string fileName = databaseName + ".sec";
             using (StreamWriter writer = new StreamWriter(fileName))
@@ -225,6 +226,6 @@ namespace DbManager.Security
                 }
             }
         }
-        
+
     }
 }
