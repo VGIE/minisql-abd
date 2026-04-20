@@ -209,6 +209,10 @@ namespace DbManager.Security
         public void Save(string databaseName)
         {
             //TODO DEADLINE 5: Save all the profiles and users/passwords created for this database.
+            if (string.IsNullOrEmpty(databaseName))
+            {
+                return; 
+            }
             string fileName = databaseName + ".sec";
             using (StreamWriter writer = new StreamWriter(fileName))
             {

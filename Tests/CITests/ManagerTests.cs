@@ -139,6 +139,19 @@ namespace SecurityParsingTests
 
             Assert.Null(result);
         }
+        [Fact]
+        public void UserbyNameNull()
+        {
+            Manager manager = new Manager("admin");
+            User resultFantasma = manager.UserByName("pedro");
+            User resultNulo = manager.UserByName(null);
+            Assert.Null(resultFantasma);
+            Assert.Null(resultNulo);
+
+        }
+        
+
+
 
         [Fact]
         public void LoadTest()
@@ -220,5 +233,77 @@ namespace SecurityParsingTests
 
             Assert.False(result);
         }
+         [Fact]
+        public void Remove()
+        {
+            Manager manager = new Manager("admin");
+            Profile profile = new Profile { Name = "Estudiantes" };
+            manager.AddProfile(profile);
+            Assert.Single(manager.Profiles);
+            bool result = manager.RemoveProfile("Estudiantes");
+            Assert.True(result);
+            Assert.Empty(manager.Profiles);
+
+        }
+        [Fact]
+        public void RemoveNull()
+        {
+            Manager manager = new Manager("admin");
+            bool result = manager.RemoveProfile(null);
+            Assert.False(result);
+
+        }
+        [Fact]
+        public void Remove_Dont_Exist()
+        {
+            Manager manager = new Manager("admin");
+            bool result = manager.RemoveProfile(null);
+            Assert.False(result);
+
+        }
+
+        [Fact]
+        public void Save()
+        {
+            Manager manager = new Manager("admin");
+            Profile profile = new Profile { Name = "Estudiantes" };
+            
+            User user = new User();
+            user.Username = "danna";
+            user.EncryptedPassword = Encryption.Encrypt("1234");
+            
+            profile.Users.Add(user);
+            manager.AddProfile(profile);
+
+            string nombreBD = "BaseNormal";
+            manager.Save(nombreBD);
+            Assert.True(System.IO.File.Exists(nombreBD + ".sec"));
+            if (System.IO.File.Exists(nombreBD + ".sec"))
+            {
+                System.IO.File.Delete(nombreBD + ".sec");
+            }
+
+        }
+        public void SaveNull()
+        {
+            Manager manager = new Manager("admin");
+            manager.Save(null);
+            manager.Save("");
+            Assert.False(System.IO.File.Exists(".sec"));
+
+        }
+        [Fact]
+        public void Save_ManagerVacio()
+        {
+            Manager manager = new Manager("admin");
+            string nombreBD = "BaseVacia";
+            manager.Save(nombreBD);
+            Assert.True(System.IO.File.Exists(nombreBD + ".sec"));
+            if (System.IO.File.Exists(nombreBD + ".sec"))
+            {
+                System.IO.File.Delete(nombreBD + ".sec");
+            }
+        }
     }
 }
+    
