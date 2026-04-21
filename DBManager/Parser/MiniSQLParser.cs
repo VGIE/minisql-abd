@@ -105,7 +105,7 @@ namespace DbManager
                 return new DeleteUser(mDeleteUser.Groups["username"].Value);
 
 
-            var mSelect = Regex.Match(miniSQLQuery, selectPattern);
+            var mSelect = Regex.Match(input, selectPattern);
             if (mSelect.Success)
             {
                 string table = mSelect.Groups["table"].Value;
