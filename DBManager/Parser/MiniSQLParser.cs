@@ -23,7 +23,7 @@ namespace DbManager
             const string selectPattern = @"^\s*SELECT\s+(?<cols>\*|[a-zA-Z][a-zA-Z0-9_]*(?:,[a-zA-Z][a-zA-Z0-9_]*)*)\s+" + 
                 @"FROM\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*" + 
                 @"(?:WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|-?[0-9.]+)\s*)?" +
-                @"(?:\s*;\s*)?\z";
+                @"(?:\s*;)?\z";
 
             const string insertPattern =
                @"^\s*INSERT\s+INTO\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
@@ -105,7 +105,7 @@ namespace DbManager
                 return new DeleteUser(mDeleteUser.Groups["username"].Value);
 
 
-            var mSelect = Regex.Match(miniSQLQuery, selectPattern);
+            var mSelect = Regex.Match(input, selectPattern);
             if (mSelect.Success)
             {
                 string table = mSelect.Groups["table"].Value;
