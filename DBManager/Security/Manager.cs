@@ -20,8 +20,8 @@ namespace DbManager.Security
 
         public bool IsUserAdmin()
         {
-            //TODO DEADLINE 5: Return true if the user logged-in (m_username) is the admin, false otherwise
-
+             //TODO DEADLINE 5: Return true if the user logged-in (m_username) is the admin, false otherwise
+            
             return false;
         }
 
@@ -44,6 +44,15 @@ namespace DbManager.Security
         {
             //TODO DEADLINE 5: Add this privilege on this table to the profile with this name
             //If the profile or the table don't exist, do nothing
+            if(table!=null){
+                foreach(Profile p in Profiles)
+                {
+                    if(p.Name == profileName)
+                    {
+                        p.GrantPrivilege(table, privilege);
+                    }
+                }
+            }
         }
 
         public void RevokePrivilege(string profileName, string table, Privilege privilege)
@@ -63,7 +72,7 @@ namespace DbManager.Security
         public bool IsGrantedPrivilege(string username, string table, Privilege privilege)
         {
             //TODO DEADLINE 5: Return true if the username has this privilege on this table. False otherwise (also in case of error)
-
+            
             return false;
         }
 
