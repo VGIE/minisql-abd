@@ -44,8 +44,7 @@ namespace DbManager
 
 
             const string deletePattern =
-                @"^\s*DELETE\s+FROM\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
-                @"WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)(?<wop>=|!=|<=|>=|<|>)(?<wval>'[^']*'|-?[0-9.]+)\s*;?\s*\z";
+                @"^DELETE\s+FROM\s+(\w+)\s+WHERE\s+(\w+)(=|<|>)('-?\d+(\.\d+)?'|'[^']+')$";
 
             const string createSecurityProfilePattern =
                 @"^\s*CREATE\s+SECURITY\s+PROFILE\s+(?<profile>[a-zA-Z][a-zA-Z0-9_]*)\s*;?\s*$";
@@ -142,9 +141,12 @@ namespace DbManager
 
             var mDelete = Regex.Match(input, deletePattern);
             if (mDelete.Success)
-                return new Delete(mDelete.Groups["table"].Value, new Condition(mDelete.Groups["wcol"].Value, mDelete.Groups["wop"].Value, Unquote(mDelete.Groups["wval"].Value)));
-
-            return null;
+            {
+                string valor = mDelete.Groups[4].Value.Trim();
+                if (valor.Contains(" ") && !valor.StartsWith("'")) return null;
+                return new Delete(mDelete.Groups[1].Value.Trim(), new Condition(mDelete.Groups[2].Value.Trim(), mDelete.Groups[3].Value.Trim(), valor.Trim('\'')));
+            }
+            return null; 
         }
 
         static List<string> CommaSeparatedNames(string text)
