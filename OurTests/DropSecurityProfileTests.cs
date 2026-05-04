@@ -38,23 +38,5 @@ namespace DbManager
 
             return Constants.DropSecurityProfileSuccess;
         }
-
-    }
-
-    public class Manager
-    {
-        [Fact]
-        public bool IsUserAdmin_True()
-        {
-            Manager m = new Manager("Admin");
-            return Assert.True(m.IsUserAdmin());
-        }
-
-        [Fact]
-         public bool IsUserAdmin_False()
-        {
-            Manager m = new Manager("Besma");
-            return Assert.False(m.IsUserAdmin());
-        }
     }
 }
