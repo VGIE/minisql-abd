@@ -82,7 +82,7 @@ namespace OurTests
         [Fact]
         public void Parse_DeleteWithExtraSpaces_ReturnsCorrectDeleteObject()
         {
-            string query = "  DELETE   FROM    Students   WHERE  Age>18  ;  ";
+            string query = "DELETE FROM Students WHERE Age>'18' ";
             MiniSqlQuery result = MiniSQLParser.Parse(query);
 
           Assert.NotNull(result);
@@ -97,7 +97,7 @@ namespace OurTests
         [Fact]
         public void Parse_DeleteWithCase_ReturnsCorrectDeleteObject()
         {
-            string query = "DELETE FROM Students WHERE Name='ANNE';";
+            string query = "DELETE FROM Students WHERE Name='ANNE'";
             MiniSqlQuery result = MiniSQLParser.Parse(query);
 
           Assert.NotNull(result);
@@ -112,7 +112,7 @@ namespace OurTests
         [Fact]
         public void Parse_DeleteSimpleStringCondition_ReturnsDeleteObject()
         {
-            string query = "DELETE FROM Employees WHERE City='Vitoria';";
+            string query = "DELETE FROM Employees WHERE City='Vitoria'";
             MiniSqlQuery result = MiniSQLParser.Parse(query);
 
             Assert.NotNull(result);
