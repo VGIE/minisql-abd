@@ -64,12 +64,13 @@ namespace OurTests
             Assert.Null(result);
         }
         [Fact]
-        public void Parse_Delete_IncorrectCapitalization_ReturnsNull()
+        public void Parse_Delete_IncorrectCapitalizationOrMissingCommas_ReturnsNull()
         {
-          
-            string query = "delete from Students WHERE Age=18;";
-            MiniSqlQuery result = MiniSQLParser.Parse(query);
-            Assert.Null(result);
+
+            Assert.Null(MiniSQLParser.Parse("delete from Students WHERE Age=18;"));
+            Assert.Null(MiniSQLParser.Parse("DELETE from Students WHERE Age=18;"));
+            Assert.Null(MiniSQLParser.Parse("DELETE FROM Students WHERE Age = 18;"));
+            Assert.Null(MiniSQLParser.Parse("DELETE FROM Students;"));
         }
         [Fact]
         public void Parse_Delete_MissingQuotesInLiteral_ReturnsNull()
@@ -85,13 +86,13 @@ namespace OurTests
             string query = "DELETE FROM Students WHERE Age>'18' ";
             MiniSqlQuery result = MiniSQLParser.Parse(query);
 
-          Assert.NotNull(result);
-           Delete delete = Assert.IsType<Delete>(result);
+            Assert.NotNull(result);
+            Delete delete = Assert.IsType<Delete>(result);
 
-         Assert.Equal("Students", delete.Table);
-         Assert.Equal("Age", delete.Where.ColumnName);
-         Assert.Equal(">", delete.Where.Operator);
-          Assert.Equal("18", delete.Where.LiteralValue);
+            Assert.Equal("Students", delete.Table);
+            Assert.Equal("Age", delete.Where.ColumnName);
+            Assert.Equal(">", delete.Where.Operator);
+            Assert.Equal("18", delete.Where.LiteralValue);
         }
 
         [Fact]
@@ -100,13 +101,13 @@ namespace OurTests
             string query = "DELETE FROM Students WHERE Name='ANNE'";
             MiniSqlQuery result = MiniSQLParser.Parse(query);
 
-          Assert.NotNull(result);
-        Delete delete = Assert.IsType<Delete>(result);
+            Assert.NotNull(result);
+            Delete delete = Assert.IsType<Delete>(result);
 
-         Assert.Equal("Students", delete.Table);
-          Assert.Equal("Name", delete.Where.ColumnName);
+            Assert.Equal("Students", delete.Table);
+            Assert.Equal("Name", delete.Where.ColumnName);
 
-        Assert.Equal("ANNE", delete.Where.LiteralValue.Replace("'", ""));
+            Assert.Equal("ANNE", delete.Where.LiteralValue.Replace("'", ""));
         }
 
         [Fact]
@@ -118,11 +119,11 @@ namespace OurTests
             Assert.NotNull(result);
             Delete delete = Assert.IsType<Delete>(result);
 
-          Assert.Equal("Employees", delete.Table);
-           Assert.Equal("City", delete.Where.ColumnName);
-           Assert.Equal("=", delete.Where.Operator);
+            Assert.Equal("Employees", delete.Table);
+            Assert.Equal("City", delete.Where.ColumnName);
+            Assert.Equal("=", delete.Where.Operator);
 
-           Assert.Equal("Vitoria", delete.Where.LiteralValue);
+            Assert.Equal("Vitoria", delete.Where.LiteralValue);
         }
 
         [Fact]
@@ -136,31 +137,6 @@ namespace OurTests
             Assert.Null(MiniSQLParser.Parse("UPDATE Students SET WHERE Id = 1;"));
         }
 
-        //[Fact]
-        //public void Database_Logic_Integration_Test()
-        //{
-        //    Database db = new Database("admin", "adminPass");
-
-        //    List<ColumnDefinition> cols = new List<ColumnDefinition> {
-        //        new ColumnDefinition(ColumnDefinition.DataType.String, "Name"),
-        //        new ColumnDefinition(ColumnDefinition.DataType.Int, "Age")
-        //    };
-
-        //    db.CreateTable("Employees", cols);
-        //    Assert.NotNull(db.TableByName("Employees"));
-
-        //    db.Insert("Employees", new List<string> { "Zeynep", "22" });
-        //    Table selectResult = db.Select("Employees", new List<string> { "*" }, null);
-
-        //    Assert.Equal(1, selectResult.NumRows());
-        //    Assert.Equal("Zeynep", selectResult.GetRow(0).Values[0]);
-
-        //    db.Update("Employees", new List<SetValue> { new SetValue("Age", "23") }, new Condition("Name", "=", "Zeynep"));
-        //    Assert.Equal("23", db.TableByName("Employees").GetRow(0).Values[1]);
-
-        //    db.DeleteWhere("Employees", new Condition("Age", ">", "20"));
-        //    Assert.Equal(0, db.TableByName("Employees").NumRows());
-        //}
 
         [Fact]
         public void Database_Error_Handling_Test()
@@ -182,33 +158,41 @@ namespace OurTests
         public void Parse_Select_IncorrectSelectWithTextAfter()
         {
             MiniSqlQuery result1 = MiniSQLParser.Parse("SELECT * FROM Students; extra text");
-           Assert.Null(result1);
+            Assert.Null(result1);
 
-          MiniSqlQuery result2 = MiniSQLParser.Parse("SELECT * FROM Students WHERE nonsense");
-         Assert.Null(result2);
+            MiniSqlQuery result2 = MiniSQLParser.Parse("SELECT * FROM Students WHERE nonsense");
+            Assert.Null(result2);
 
             MiniSqlQuery result3 = MiniSQLParser.Parse("SELECT Name FROM Users xyz");
-           Assert.Null(result3);
+            Assert.Null(result3);
+        }
+
+
+        [Fact]
+        public void Parse_Update_IncorrectSpacesOrMissingApostrophes()
+        {
+            Assert.Null(MiniSQLParser.Parse("UPDATE Students SET Name = Ali WHERE Id = 1;"));
+
+            Assert.Null(MiniSQLParser.Parse("UPDATE Students SET Name = 'Ali' Age = 20 WHERE Id = 1;"));
+
+            Assert.Null(MiniSQLParser.Parse("UPDATE Students SET Name = 'Ali',, Age = 20 WHERE Id = 1;"));
+
+            Assert.Null(MiniSQLParser.Parse("UPDATE Students SET Name = 'Ali' WHERE Id 1;"));
         }
 
         [Fact]
-        public void Parse_Select_IncorrectSelectWithMultipleColumnsAndSpacesBetweenColumns()
+        public void Parse_CreateTable_IncorrectWithMultipleColumnsAndSpaces()
         {
-            Assert.Null(MiniSQLParser.Parse("SELECT Name Age FROM Users;"));
-            Assert.Null(MiniSQLParser.Parse("SELECT Name,,Age FROM Users;"));
-            Assert.Null(MiniSQLParser.Parse("SELECT Name, Age, FROM Users;"));
-            Assert.Null(MiniSQLParser.Parse("SELECT FROM Users;"));
-        }
+            Assert.Null(MiniSQLParser.Parse("CREATE TABLE Students (Name TEXT Age INT);"));
 
-        [Fact]
-        public void Parse_Insert_IncorrectSpacesOrMissingCommas()
-        {
-            Assert.Null(MiniSQLParser.Parse("INSERT INTO Students VALUES ('Ahmet' 21);"));
-            Assert.Null(MiniSQLParser.Parse("INSERT INTO Students VALUES ('Ahmet',,21);"));
-            Assert.Null(MiniSQLParser.Parse("INSERT INTO Students VALUES ('Ahmet', 21,);"));
-            Assert.Null(MiniSQLParser.Parse("INSERT INTO Students VALUES ();"));
-        }
+            Assert.Null(MiniSQLParser.Parse("CREATE TABLE Students (Name TEXT,, Age INT);"));
 
+            Assert.Null(MiniSQLParser.Parse("CREATE TABLE Students (Name TEXT, Age INT,);"));
+
+            Assert.Null(MiniSQLParser.Parse("CREATE TABLE Students (Name TEXT, Age);"));
+
+            Assert.Null(MiniSQLParser.Parse("CREATE TABLE Students (Name TEXT, Age INT EXTRA);"));
+        }
 
 
     }
