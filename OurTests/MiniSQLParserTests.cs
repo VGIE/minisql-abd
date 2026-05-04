@@ -64,12 +64,13 @@ namespace OurTests
             Assert.Null(result);
         }
         [Fact]
-        public void Parse_Delete_IncorrectCapitalization_ReturnsNull()
+        public void Parse_Delete_IncorrectCapitalizationOrMissingCommas_ReturnsNull()
         {
-          
-            string query = "delete from Students WHERE Age=18;";
-            MiniSqlQuery result = MiniSQLParser.Parse(query);
-            Assert.Null(result);
+
+            Assert.Null(MiniSQLParser.Parse("delete from Students WHERE Age=18;"));
+            Assert.Null(MiniSQLParser.Parse("DELETE from Students WHERE Age=18;"));
+            Assert.Null(MiniSQLParser.Parse("DELETE FROM Students WHERE Age = 18;"));
+            Assert.Null(MiniSQLParser.Parse("DELETE FROM Students;"));
         }
         [Fact]
         public void Parse_Delete_MissingQuotesInLiteral_ReturnsNull()
@@ -85,13 +86,13 @@ namespace OurTests
             string query = "  DELETE   FROM    Students   WHERE  Age>18  ;  ";
             MiniSqlQuery result = MiniSQLParser.Parse(query);
 
-          Assert.NotNull(result);
-           Delete delete = Assert.IsType<Delete>(result);
+            Assert.NotNull(result);
+            Delete delete = Assert.IsType<Delete>(result);
 
-         Assert.Equal("Students", delete.Table);
-         Assert.Equal("Age", delete.Where.ColumnName);
-         Assert.Equal(">", delete.Where.Operator);
-          Assert.Equal("18", delete.Where.LiteralValue);
+            Assert.Equal("Students", delete.Table);
+            Assert.Equal("Age", delete.Where.ColumnName);
+            Assert.Equal(">", delete.Where.Operator);
+            Assert.Equal("18", delete.Where.LiteralValue);
         }
 
         [Fact]
@@ -100,13 +101,13 @@ namespace OurTests
             string query = "DELETE FROM Students WHERE Name='ANNE';";
             MiniSqlQuery result = MiniSQLParser.Parse(query);
 
-          Assert.NotNull(result);
-        Delete delete = Assert.IsType<Delete>(result);
+            Assert.NotNull(result);
+            Delete delete = Assert.IsType<Delete>(result);
 
-         Assert.Equal("Students", delete.Table);
-          Assert.Equal("Name", delete.Where.ColumnName);
+            Assert.Equal("Students", delete.Table);
+            Assert.Equal("Name", delete.Where.ColumnName);
 
-        Assert.Equal("ANNE", delete.Where.LiteralValue.Replace("'", ""));
+            Assert.Equal("ANNE", delete.Where.LiteralValue.Replace("'", ""));
         }
 
         [Fact]
@@ -118,11 +119,11 @@ namespace OurTests
             Assert.NotNull(result);
             Delete delete = Assert.IsType<Delete>(result);
 
-          Assert.Equal("Employees", delete.Table);
-           Assert.Equal("City", delete.Where.ColumnName);
-           Assert.Equal("=", delete.Where.Operator);
+            Assert.Equal("Employees", delete.Table);
+            Assert.Equal("City", delete.Where.ColumnName);
+            Assert.Equal("=", delete.Where.Operator);
 
-           Assert.Equal("Vitoria", delete.Where.LiteralValue);
+            Assert.Equal("Vitoria", delete.Where.LiteralValue);
         }
 
         [Fact]
@@ -157,13 +158,13 @@ namespace OurTests
         public void Parse_Select_IncorrectSelectWithTextAfter()
         {
             MiniSqlQuery result1 = MiniSQLParser.Parse("SELECT * FROM Students; extra text");
-           Assert.Null(result1);
+            Assert.Null(result1);
 
-          MiniSqlQuery result2 = MiniSQLParser.Parse("SELECT * FROM Students WHERE nonsense");
-         Assert.Null(result2);
+            MiniSqlQuery result2 = MiniSQLParser.Parse("SELECT * FROM Students WHERE nonsense");
+            Assert.Null(result2);
 
             MiniSqlQuery result3 = MiniSQLParser.Parse("SELECT Name FROM Users xyz");
-           Assert.Null(result3);
+            Assert.Null(result3);
         }
 
 
