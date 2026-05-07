@@ -38,9 +38,8 @@ namespace DbManager
 
 
             const string updateTablePattern =
-               @"^\s*UPDATE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
-               @"SET\s+(?<set>[a-zA-Z][a-zA-Z0-9_]*\s*=\s*(?:'[^']*'|-?[0-9.]+)(?:\s*,\s*[a-zA-Z][a-zA-Z0-9_]*\s*=\s*(?:'[^']*'|-?[0-9.]+))*)\s+" +
-               @"WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|-?[0-9.]+)\s*;?\s*\z";
+               @"^UPDATE\s+(\w+)\s+SET\s+(\w+=('[-]?\d+(\.\d+)?'|'[^']+')(?:,(\w+=('[-]?\d+(\.\d+)?'|'[^']+'))*)?)\s
+               +WHERE\s+(\w+)(=|<|>)('[-]?\d+(\.\d+)?'|'[^']+')$";
 
 
             const string deletePattern =
@@ -133,10 +132,9 @@ namespace DbManager
             var mUpdate = Regex.Match(input, updateTablePattern);
             if (mUpdate.Success)
             {
-                var setValues = ParseSetValues(mUpdate.Groups["set"].Value);
-                if (setValues == null || setValues.Count == 0) return null;
-                var condition = new Condition(mUpdate.Groups["wcol"].Value, mUpdate.Groups["wop"].Value, Unquote(mUpdate.Groups["wval"].Value));
-                return new Update(mUpdate.Groups["table"].Value, setValues, condition);
+                var setValues = ParseSetValues(mUpdate.Groups[2].Value);
+                if (setValues == null) return null;
+                return new Update(mUpdate.Groups[1].Value, setValues, new Condition(mUpdate.Groups[8].Value, mUpdate.Groups[9].Value, mUpdate.Groups[10].Value.Trim('\'')));
             }
 
             var mDelete = Regex.Match(input, deletePattern);
