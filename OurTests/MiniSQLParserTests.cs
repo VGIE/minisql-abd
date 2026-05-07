@@ -41,7 +41,9 @@ namespace OurTests
         [Fact]
         public void Parse_Update_Success()
         {
-            MiniSqlQuery result = MiniSQLParser.Parse("UPDATE Students SET Name = 'Ali', Age = 20 WHERE Id = 1;");
+            string query = "UPDATE Students SET Name='Ali',Age='20' WHERE Id='1'";
+            MiniSqlQuery result = MiniSQLParser.Parse(query);
+            Assert.NotNull(result);
             Update update = Assert.IsType<Update>(result);
             Assert.Equal("Students", update.Table);
             Assert.Equal(2, update.Columns.Count);
