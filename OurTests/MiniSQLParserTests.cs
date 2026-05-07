@@ -160,7 +160,7 @@ namespace OurTests
         public void Parse_Select_IncorrectSelectWithTextAfter()
         {
             Assert.Null(MiniSQLParser.Parse("SELECT * FROM Students; extra text"));
-            Assert.Null(MiniSQLParser.Parse("SELECT * FROM Students WHERE nonsense"))
+            Assert.Null(MiniSQLParser.Parse("SELECT * FROM Students WHERE nonsense"));
             Assert.Null(MiniSQLParser.Parse("SELECT Name FROM Users xyz"));
         }
 
