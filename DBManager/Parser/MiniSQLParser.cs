@@ -151,40 +151,6 @@ namespace DbManager
             if (mDeleteUser.Success)
                 return new DeleteUser(mDeleteUser.Groups["username"].Value);
 
-
-
-<<<<<<< HEAD
-=======
-            var mInsert = Regex.Match(input, insertPattern); 
-            if (mInsert.Success) 
-                return new Insert(mInsert.Groups["table"].Value, CommaSeparatedValues(mInsert.Groups["vals"].Value));
-
-            var mDropTable = Regex.Match(input, dropTablePattern);
-            if (mDropTable.Success) return new DropTable(mDropTable.Groups["table"].Value);
-
-            var mCreateTable = Regex.Match(input, createTablePattern);
-            if (mCreateTable.Success)
-            {
-                var columns = ParseCreateTableColumns(mCreateTable.Groups["cols"].Value);
-                return columns == null ? null : new CreateTable(mCreateTable.Groups["table"].Value, columns);
-            }
-
-            var mUpdate = Regex.Match(input, updateTablePattern);
-            if (mUpdate.Success)
-            {
-                var setValues = ParseSetValues(mUpdate.Groups[2].Value);
-                if (setValues == null) return null;
-                return new Update(mUpdate.Groups[1].Value, setValues, new Condition(mUpdate.Groups[8].Value, mUpdate.Groups[9].Value, mUpdate.Groups[10].Value.Trim('\'')));
-            }
-
-            var mDelete = Regex.Match(input, deletePattern);
-            if (mDelete.Success)
-            {
-                string valor = mDelete.Groups[4].Value.Trim();
-                if (valor.Contains(" ") && !valor.StartsWith("'")) return null;
-                return new Delete(mDelete.Groups[1].Value.Trim(), new Condition(mDelete.Groups[2].Value.Trim(), mDelete.Groups[3].Value.Trim(), valor.Trim('\'')));
-            }
->>>>>>> 7a33403b3221818d05410e7d2a99b25423f66426
             return null; 
         }
 
