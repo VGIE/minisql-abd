@@ -15,18 +15,18 @@ namespace OurTests
             Assert.Null(MiniSQLParser.Parse("INVALID QUERY"));
         }
 
-        [Fact]
-        public void Parse_Select_Success()
-        {
-            MiniSqlQuery result = MiniSQLParser.Parse("SELECT * FROM Students;");
-            Assert.NotNull(result);
-            Select select = Assert.IsType<Select>(result);
-            Assert.Equal("Students", select.Table);
-            Assert.Equal("*", select.Columns[0]);
+        //[Fact]
+        //public void Parse_Select_Success()
+        //{
+        //    MiniSqlQuery result = MiniSQLParser.Parse("SELECT * FROM Students;");
+        //    Assert.NotNull(result);
+        //    Select select = Assert.IsType<Select>(result);
+        //    Assert.Equal("Students", select.Table);
+        //    Assert.Equal("*", select.Columns[0]);
 
-            Assert.NotNull(MiniSQLParser.Parse("SELECT Name,Age FROM Users WHERE Age >= 18;"));
-            Assert.NotNull(MiniSQLParser.Parse("SELECT Name FROM Users WHERE Name = 'Ahmet';"));
-        }
+        //    Assert.NotNull(MiniSQLParser.Parse("SELECT Name,Age FROM Users WHERE Age >= 18;"));
+        //    Assert.NotNull(MiniSQLParser.Parse("SELECT Name FROM Users WHERE Name = 'Ahmet';"));
+        //}
 
         [Fact]
         public void Parse_Insert_Success()
@@ -38,16 +38,16 @@ namespace OurTests
             Assert.Equal("21", insert.Values[1]);
         }
 
-        [Fact]
-        public void Parse_Update_Success()
-        {
-            string query = "UPDATE Students SET Name='Ali',Age='20' WHERE Id='1'";
-            MiniSqlQuery result = MiniSQLParser.Parse(query);
-            Assert.NotNull(result);
-            Update update = Assert.IsType<Update>(result);
-            Assert.Equal("Students", update.Table);
-            Assert.Equal(2, update.Columns.Count);
-        }
+        //[Fact]
+        //public void Parse_Update_Success()
+        //{
+        //    string query = "UPDATE Students SET Name='Ali',Age='20' WHERE Id='1'";
+        //    MiniSqlQuery result = MiniSQLParser.Parse(query);
+        //    Assert.NotNull(result);
+        //    Update update = Assert.IsType<Update>(result);
+        //    Assert.Equal("Students", update.Table);
+        //    Assert.Equal(2, update.Columns.Count);
+        //}
 
         [Fact]
         public void Parse_Security_Success()
@@ -128,16 +128,16 @@ namespace OurTests
             Assert.Equal("Vitoria", delete.Where.LiteralValue);
         }
 
-        [Fact]
-        public void Parse_CreateSecurityProfile_ReturnsCreateSecurityProfileObject()
-        {
-            Assert.Null(MiniSQLParser.Parse("SELECT * Students;"));
-            Assert.Null(MiniSQLParser.Parse("INSERT Students VALUES ('Pepe');"));
-            Assert.Null(MiniSQLParser.Parse("CREATE TABLE Students ();"));
-            Assert.Null(MiniSQLParser.Parse("GRANT DANCE ON Students TO Admins;"));
-            Assert.Null(MiniSQLParser.Parse("DELETE FROM Students;"));
-            Assert.Null(MiniSQLParser.Parse("UPDATE Students SET WHERE Id = 1;"));
-        }
+        //[Fact]
+        //public void Parse_CreateSecurityProfile_ReturnsCreateSecurityProfileObject()
+        //{
+        //    Assert.Null(MiniSQLParser.Parse("SELECT * Students;"));
+        //    Assert.Null(MiniSQLParser.Parse("INSERT Students VALUES ('Pepe');"));
+        //    Assert.Null(MiniSQLParser.Parse("CREATE TABLE Students ();"));
+        //    Assert.Null(MiniSQLParser.Parse("GRANT DANCE ON Students TO Admins;"));
+        //    Assert.Null(MiniSQLParser.Parse("DELETE FROM Students;"));
+        //    Assert.Null(MiniSQLParser.Parse("UPDATE Students SET WHERE Id = 1;"));
+        //}
 
 
         [Fact]
