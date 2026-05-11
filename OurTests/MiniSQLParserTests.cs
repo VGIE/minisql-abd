@@ -194,6 +194,18 @@ namespace OurTests
             Assert.Null(MiniSQLParser.Parse("CREATE TABLE Students (Name TEXT, Age INT EXTRA);"));
         }
 
+        [Fact]
+        public void Parse_SelectWhere_ReturnsCorrectObject()
+        {
+            MiniSqlQuery result = MiniSQLParser.Parse("SELECT Name FROM Users WHERE Age='18'");
+            Assert.NotNull(result);
+            Select select = Assert.IsType<Select>(result);
+            Assert.Equal("Users", select.Table);
+            Assert.Equal("Age", select.Where.ColumnName);
+            Assert.Equal("=", select.Where.Operator);
+            Assert.Equal("18", select.Where.LiteralValue);
+        }
+
 
     }
 }

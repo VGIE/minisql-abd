@@ -20,10 +20,7 @@ namespace DbManager
 
             string input = miniSQLQuery.Trim();
 
-            const string selectPattern = @"^\s*SELECT\s+(?<cols>\*|[a-zA-Z][a-zA-Z0-9_]*(?:,[a-zA-Z][a-zA-Z0-9_]*)*)\s+" + 
-                @"FROM\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*" + 
-                @"(?:WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|-?[0-9.]+)\s*)?" +
-                @"(?:\s*;)?\z";
+            const string selectPattern =@"^SELECT\s+(\*|[a-zA-Z0-9]+(?:,[a-zA-Z0-9]+)*)\s+FROM\s+([a-zA-Z0-9]+)\s*;?\s*$";
 
             const string insertPattern =
                @"^\s*INSERT\s+INTO\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
@@ -34,7 +31,7 @@ namespace DbManager
                 @"^\s*DROP\s+TABLE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*;?\s*\z";
 
 
-            const string createTablePattern = @"^CREATE\s+TABLE\s+(\w+)\s+\((\w+\s+(?:INT|DOUBLE|TEXT)(?:,\w+\s+(?:INT|DOUBLE|TEXT))*)?\)$";
+            const string createTablePattern = @"^CREATE\s+TABLE\s+(\w+)\s+\((\w+\s+(?:INT|DOUBLE|TEXT)(?:,\w+\s+(?:INT|DOUBLE|TEXT))*)?\)\s*;?\s*$";
 
 
             const string updateTablePattern =
@@ -65,9 +62,62 @@ namespace DbManager
 
             const string deleteUserPattern =
                 @"^\s*DELETE\s+USER\s+(?<username>[A-Za-z][A-Za-z0-9]*)\s*;?\s*$";
+            const string selectWherePattern = @"^SELECT\s+(\*|[a-zA-Z0-9]+(?:,[a-zA-Z0-9]+)*)\s+FROM\s+([a-zA-Z0-9]+)\s+WHERE\s+([a-zA-Z0-9]+)(>=|<=|!=|=|<|>)('[-]?\d+(\.\d+)?'|'[^']+'|-?\d+(\.\d+)?)\s*;?\s*$";
 
 
-            var mCreate = Regex.Match(miniSQLQuery, createSecurityProfilePattern);
+            var mSelect = Regex.Match(input, selectPattern);
+            if (mSelect.Success)
+            {
+                return new Select(mSelect.Groups[2].Value, CommaSeparatedNames(mSelect.Groups[1].Value));
+            }
+            var mSelectWhere = Regex.Match(input, selectWherePattern);
+            if (mSelectWhere.Success)
+            {
+                string tableName = mSelectWhere.Groups[2].Value;
+                List<string> columns = CommaSeparatedNames(mSelectWhere.Groups[1].Value);
+                string col = mSelectWhere.Groups[3].Value;
+                string operador = mSelectWhere.Groups[4].Value;
+                string valor = mSelectWhere.Groups[5].Value;
+
+    if (valor.Contains(" ") && !valor.StartsWith("'"))
+        return null;
+
+    string valorLimpio = valor.Trim('\'');
+    Condition condicion = new Condition(col, operador, valorLimpio);
+    return new Select(tableName, columns, condicion);
+}
+
+             var mInsert = Regex.Match(input, insertPattern);
+            if (mInsert.Success)
+            return new Insert(mInsert.Groups["table"].Value, CommaSeparatedValues(mInsert.Groups["vals"].Value));
+
+            var mDropTable = Regex.Match(input, dropTablePattern);
+            if (mDropTable.Success) return new DropTable(mDropTable.Groups["table"].Value);
+
+            var mCreateTable = Regex.Match(input, createTablePattern);
+            if (mCreateTable.Success)
+            {
+                var columns = ParseCreateTableColumns(mCreateTable.Groups[2].Value);
+                return new CreateTable(mCreateTable.Groups[1].Value, columns);
+            }
+
+            var mUpdate = Regex.Match(input, updateTablePattern);
+            if (mUpdate.Success)
+            {
+                var setValues = ParseSetValues(mUpdate.Groups["set"].Value);
+                if (setValues == null || setValues.Count == 0) return null;
+                var condition = new Condition(mUpdate.Groups["wcol"].Value, mUpdate.Groups["wop"].Value, Unquote(mUpdate.Groups["wval"].Value));
+                return new Update(mUpdate.Groups["table"].Value, setValues, condition);
+            }
+
+            var mDelete = Regex.Match(input, deletePattern);
+            if (mDelete.Success)
+            {
+                string valorDelete = mDelete.Groups[4].Value.Trim();
+                if (valorDelete.Contains(" ") && !valorDelete.StartsWith("'")) return null;
+                return new Delete(mDelete.Groups[1].Value.Trim(), new Condition(mDelete.Groups[2].Value.Trim(), mDelete.Groups[3].Value.Trim(), valorDelete.Trim('\'')));
+            }
+             var mCreate = Regex.Match(miniSQLQuery, createSecurityProfilePattern);
             if (mCreate.Success)
                 return new CreateSecurityProfile(mCreate.Groups["profile"].Value);
 
@@ -104,48 +154,7 @@ namespace DbManager
                 return new DeleteUser(mDeleteUser.Groups["username"].Value);
 
 
-            var mSelect = Regex.Match(input, selectPattern);
-            if (mSelect.Success)
-            {
-                string table = mSelect.Groups["table"].Value;
-                string colsText = mSelect.Groups["cols"].Value.Trim();
-                List<string> columns = (colsText == Asterisk) ? new List<string> { "*" } : CommaSeparatedNames(colsText);
-                Condition condition = null;
-                if (mSelect.Groups["wcol"].Success)
-                    condition = new Condition(mSelect.Groups["wcol"].Value, mSelect.Groups["wop"].Value, Unquote(mSelect.Groups["wval"].Value));
-                return new Select(table, columns, condition);
-            }
 
-            var mInsert = Regex.Match(input, insertPattern); 
-            if (mInsert.Success) 
-                return new Insert(mInsert.Groups["table"].Value, CommaSeparatedValues(mInsert.Groups["vals"].Value));
-
-            var mDropTable = Regex.Match(input, dropTablePattern);
-            if (mDropTable.Success) return new DropTable(mDropTable.Groups["table"].Value);
-
-            var mCreateTable = Regex.Match(input, createTablePattern);
-            if (mCreateTable.Success)
-            {
-                var columns = ParseCreateTableColumns(mCreateTable.Groups["cols"].Value);
-                return columns == null ? null : new CreateTable(mCreateTable.Groups["table"].Value, columns);
-            }
-
-            var mUpdate = Regex.Match(input, updateTablePattern);
-            if (mUpdate.Success)
-            {
-                var setValues = ParseSetValues(mUpdate.Groups["set"].Value);
-                if (setValues == null || setValues.Count == 0) return null;
-                var condition = new Condition(mUpdate.Groups["wcol"].Value, mUpdate.Groups["wop"].Value, Unquote(mUpdate.Groups["wval"].Value));
-                return new Update(mUpdate.Groups["table"].Value, setValues, condition);
-            }
-
-            var mDelete = Regex.Match(input, deletePattern);
-            if (mDelete.Success)
-            {
-                string valor = mDelete.Groups[4].Value.Trim();
-                if (valor.Contains(" ") && !valor.StartsWith("'")) return null;
-                return new Delete(mDelete.Groups[1].Value.Trim(), new Condition(mDelete.Groups[2].Value.Trim(), mDelete.Groups[3].Value.Trim(), valor.Trim('\'')));
-            }
             return null; 
         }
 
