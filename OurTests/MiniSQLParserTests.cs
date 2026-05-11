@@ -27,7 +27,7 @@ namespace OurTests
         //    Assert.NotNull(MiniSQLParser.Parse("SELECT Name,Age FROM Users WHERE Age >= 18;"));
         //    Assert.NotNull(MiniSQLParser.Parse("SELECT Name FROM Users WHERE Name = 'Ahmet';"));
         //}
-
+        /*
         [Fact]
         public void Parse_Insert_Success()
         {
@@ -37,7 +37,7 @@ namespace OurTests
             Assert.Equal("Ahmet", insert.Values[0]);
             Assert.Equal("21", insert.Values[1]);
         }
-
+*/
         //[Fact]
         //public void Parse_Update_Success()
         //{

@@ -20,25 +20,14 @@ namespace DbManager
 
             string input = miniSQLQuery.Trim();
 
-            const string selectPattern =@"^SELECT\s+(\*|[a-zA-Z0-9]+(?:,[a-zA-Z0-9]+)*)\s+FROM\s+([a-zA-Z0-9]+)\s*;?\s*$";
-
-            const string insertPattern =
-               @"^\s*INSERT\s+INTO\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
-               @"VALUES\s*\(\s*(?<vals>('[^']*'|-?[0-9.]+)(?:\s*,\s*('[^']*'|-?[0-9.]+))*)\s*\)\s*;?\s*$";
-
-
-            const string dropTablePattern =
-                @"^\s*DROP\s+TABLE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*;?\s*\z";
-
-
+            const string selectPattern =@"^SELECT\s+(\*|[a-zA-Z0-9]+(?:,[a-zA-Z0-9]+)*)\s+FROM\s+([a-zA-Z0-9]+)$";
+            const string selectWherePattern = @"^SELECT\s+(\*|[a-zA-Z0-9]+(?:,[a-zA-Z0-9]+)*)\s+FROM\s+([a-zA-Z0-9]+)\s+WHERE\s+([a-zA-Z0-9]+)(=|<|>)('[-]?\d+(\.\d+)?'|'[^']+'|'[-]?\d+(\.\d+)?)$";
+            const string insertPattern =@"^INSERT\s+INTO\s+(\w+)\s+VALUES\s*\((('[-]?\d+(\.\d+)?'|'[^']+')(?:,('[-]?\d+(\.\d+)?'|'[^']+'))*)\)$";
+            const string dropTablePattern = @" ^\s*DROP\s+TABLE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s*;?\s*\z";
             const string createTablePattern = @"^CREATE\s+TABLE\s+(\w+)\s+\((\w+\s+(?:INT|DOUBLE|TEXT)(?:,\w+\s+(?:INT|DOUBLE|TEXT))*)?\)\s*;?\s*$";
 
 
-            const string updateTablePattern =
-            @"^\s*UPDATE\s+(?<table>[a-zA-Z][a-zA-Z0-9_]*)\s+" +
-            @"SET\s+(?<set>[a-zA-Z][a-zA-Z0-9_]*\s*=\s*(?:'[^']*'|-?[0-9.]+)(?:\s*,\s*[a-zA-Z][a-zA-Z0-9_]*\s*=\s*(?:'[^']*'|-?[0-9.]+))*)\s+" +
-            @"WHERE\s+(?<wcol>[a-zA-Z][a-zA-Z0-9_]*)\s*(?<wop>=|!=|<=|>=|<|>)\s*(?<wval>'[^']*'|-?[0-9.]+)\s*;?\s*\z";
-
+            const string updateTablePattern = @"^UPDATE\s+(\w+)\s+SET\s+(\w+=('[-]?\d+(\.\d+)?'|'[^']+')(?:,(\w+=('[-]?\d+(\.\d+)?'|'[^']+'))*)?)\s+WHERE\s+(\w+)(=|<|>)('[-]?\d+(\.\d+)?'|'[^']+')$";
             const string deletePattern =
                 @"^DELETE\s+FROM\s+(\w+)\s+WHERE\s+(\w+)(=|<|>)('-?\d+(\.\d+)?'|'[^']+')$";
 
@@ -61,15 +50,14 @@ namespace DbManager
 
             const string deleteUserPattern =
                 @"^\s*DELETE\s+USER\s+(?<username>[A-Za-z][A-Za-z0-9]*)\s*;?\s*$";
-            const string selectWherePattern = @"^SELECT\s+(\*|[a-zA-Z0-9]+(?:,[a-zA-Z0-9]+)*)\s+FROM\s+([a-zA-Z0-9]+)\s+WHERE\s+([a-zA-Z0-9]+)(>=|<=|!=|=|<|>)('[-]?\d+(\.\d+)?'|'[^']+'|-?\d+(\.\d+)?)\s*;?\s*$";
 
 
-            var mSelect = Regex.Match(input, selectPattern);
+            Match mSelect = Regex.Match(miniSQLQuery, selectPattern);
             if (mSelect.Success)
             {
                 return new Select(mSelect.Groups[2].Value, CommaSeparatedNames(mSelect.Groups[1].Value));
             }
-            var mSelectWhere = Regex.Match(input, selectWherePattern);
+            Match mSelectWhere = Regex.Match(miniSQLQuery, selectWherePattern);
             if (mSelectWhere.Success)
             {
                 string tableName = mSelectWhere.Groups[2].Value;
@@ -78,17 +66,21 @@ namespace DbManager
                 string operador = mSelectWhere.Groups[4].Value;
                 string valor = mSelectWhere.Groups[5].Value;
 
-    if (valor.Contains(" ") && !valor.StartsWith("'"))
-        return null;
+                if (valor.Contains(" ") && !valor.StartsWith("'")) return null;
+                return new Select(tableName, columns, new Condition(col, operador, valor.Trim('\'')));
 
-    string valorLimpio = valor.Trim('\'');
-    Condition condicion = new Condition(col, operador, valorLimpio);
-    return new Select(tableName, columns, condicion);
+         
 }
 
-             var mInsert = Regex.Match(input, insertPattern);
+            Match mInsert = Regex.Match(miniSQLQuery, insertPattern);
             if (mInsert.Success)
-            return new Insert(mInsert.Groups["table"].Value, CommaSeparatedValues(mInsert.Groups["vals"].Value));
+            {
+                var values = ParseInsertValues(mInsert.Groups[2].Value);
+                if (values == null) return null;
+                return new Insert(mInsert.Groups[1].Value.Trim(), values);
+
+            }
+
 
             var mDropTable = Regex.Match(input, dropTablePattern);
             if (mDropTable.Success) return new DropTable(mDropTable.Groups["table"].Value);
@@ -100,13 +92,13 @@ namespace DbManager
                 return new CreateTable(mCreateTable.Groups[1].Value, columns);
             }
 
-            var mUpdate = Regex.Match(input, updateTablePattern);
+            Match mUpdate = Regex.Match(miniSQLQuery, updateTablePattern);
             if (mUpdate.Success)
             {
-                var setValues = ParseSetValues(mUpdate.Groups["set"].Value);
+                var setValues = ParseSetValues(mUpdate.Groups[2].Value);
                 if (setValues == null || setValues.Count == 0) return null;
-                var condition = new Condition(mUpdate.Groups["wcol"].Value, mUpdate.Groups["wop"].Value, Unquote(mUpdate.Groups["wval"].Value));
-                return new Update(mUpdate.Groups["table"].Value, setValues, condition);
+                var condition = new Condition(mUpdate.Groups[8].Value, mUpdate.Groups[9].Value, mUpdate.Groups[10].Value.Trim('\''));
+                return new Update(mUpdate.Groups[1].Value, setValues, condition);
             }
 
             var mDelete = Regex.Match(input, deletePattern);
@@ -165,29 +157,21 @@ namespace DbManager
             foreach (var p in parts) result.Add(p.Trim());
             return result;
         }
-
-        static List<string> CommaSeparatedValues(string text) 
+        static List<string> ParseInsertValues(string text)
         {
-            List<string> values = new List<string>(); 
-            if (text == null) return values; 
-            bool inQuotes = false; string current = ""; 
-            for (int i = 0; i < text.Length; i++) 
+            string[] textParts = text.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+            List<string> result = new List<string>();
+            foreach (string v in textParts)
             {
-                char ch = text[i]; 
-                if (ch == '\'') inQuotes = !inQuotes; 
-                if (ch == ',' && !inQuotes) 
-                {
-                    values.Add(Unquote(current.Trim())); 
-                    current = ""; 
-                }
-                else current += ch; 
-            } 
-            
-            if (!string.IsNullOrWhiteSpace(current)) 
-                values.Add(Unquote(current.Trim())); 
-            
-            return values; 
+                string val = v.Trim();
+                if (val.Contains(" ") && !val.StartsWith("'")) return null; // Falla si hay espacios sin comillas
+                if ((val.StartsWith("'") && !val.EndsWith("'")) || (!val.StartsWith("'") && val.EndsWith("'"))) return null;
+                result.Add(val.Trim('\''));
+            }
+            return result;
         }
+
+        
 
         static string Unquote(string value)
         {
