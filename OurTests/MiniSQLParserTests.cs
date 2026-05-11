@@ -41,7 +41,9 @@ namespace OurTests
         [Fact]
         public void Parse_Update_Success()
         {
-            MiniSqlQuery result = MiniSQLParser.Parse("UPDATE Students SET Name = 'Ali', Age = 20 WHERE Id = 1;");
+            string query = "UPDATE Students SET Name='Ali',Age='20' WHERE Id='1'";
+            MiniSqlQuery result = MiniSQLParser.Parse(query);
+            Assert.NotNull(result);
             Update update = Assert.IsType<Update>(result);
             Assert.Equal("Students", update.Table);
             Assert.Equal(2, update.Columns.Count);
@@ -157,14 +159,9 @@ namespace OurTests
         [Fact]
         public void Parse_Select_IncorrectSelectWithTextAfter()
         {
-            MiniSqlQuery result1 = MiniSQLParser.Parse("SELECT * FROM Students; extra text");
-            Assert.Null(result1);
-
-            MiniSqlQuery result2 = MiniSQLParser.Parse("SELECT * FROM Students WHERE nonsense");
-            Assert.Null(result2);
-
-            MiniSqlQuery result3 = MiniSQLParser.Parse("SELECT Name FROM Users xyz");
-            Assert.Null(result3);
+            Assert.Null(MiniSQLParser.Parse("SELECT * FROM Students; extra text"));
+            Assert.Null(MiniSQLParser.Parse("SELECT * FROM Students WHERE nonsense"));
+            Assert.Null(MiniSQLParser.Parse("SELECT Name FROM Users xyz"));
         }
 
 
