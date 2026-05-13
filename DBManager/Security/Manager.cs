@@ -122,11 +122,11 @@ namespace DbManager.Security
                 return null;
             }
 
-            foreach (Profile p in Profiles)
+            foreach (Profile pr in Profiles)
             {
-                if (p.Name == profileName)
+                if (pr.Name == profileName)
                 {
-                    return p;
+                    return pr;
                 }
             }
 
