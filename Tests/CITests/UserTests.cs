@@ -96,3 +96,72 @@ namespace OurTests
         }
     }
 }*/
+using DbManager.Security;
+using Xunit;
+
+namespace OurTests
+{
+    public class UserTests
+    {
+        [Fact]
+        public void Constructor_SetsUsername()
+        {
+            var user = new User("zeynep", "secret123");
+
+            Assert.Equal("zeynep", user.Username);
+        }
+
+        [Fact]
+        public void Constructor_DoesNotStorePlainPassword()
+        {
+            const string plain = "secret123";
+            var user = new User("zeynep", plain);
+
+            Assert.NotNull(user.EncryptedPassword);
+            Assert.NotEqual(plain, user.EncryptedPassword);
+        }
+
+        [Fact]
+        public void Constructor_EncryptedPassword_MatchesEncryptionHelper()
+        {
+            const string plain = "secret123";
+            var user = new User("zeynep", plain);
+
+            Assert.Equal(Encryption.Encrypt(plain), user.EncryptedPassword);
+        }
+
+        [Fact]
+        public void Constructor_SamePassword_ProducesSameEncryptedPassword_ForDifferentUsernames()
+        {
+            var first = new User("zeynep", "samepass");
+            var second = new User("bob", "samepass");
+
+            Assert.Equal(first.EncryptedPassword, second.EncryptedPassword);
+        }
+
+        [Fact]
+        public void Constructor_DifferentPasswords_ProduceDifferentEncryptedPasswords()
+        {
+            var first = new User("zeynep", "firstpass");
+            var second = new User("zeynep", "secondpass");
+
+            Assert.NotEqual(first.EncryptedPassword, second.EncryptedPassword);
+        }
+
+        [Fact]
+        public void Constructor_NullPassword_EncryptedPassword_IsNull()
+        {
+            var user = new User("zeynep", null);
+
+            Assert.Null(user.EncryptedPassword);
+        }
+
+        [Fact]
+        public void ParameterlessConstructor_CreatesInstance()
+        {
+            var user = new User();
+
+            Assert.NotNull(user);
+        }
+    }
+}
